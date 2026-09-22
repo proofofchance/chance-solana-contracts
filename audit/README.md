@@ -51,3 +51,5 @@ CHANCE_AUDIT_FIXTURE=/tmp/giveaway-audit.json CHANCE_DAILY_AUDIT_FIXTURE=/tmp/da
 These fixtures represent an isolated LiteSVM bank; its RPC transport/block identity is test data, not a deployed network. CI creates them from the exact reproducibly built binaries and exercises both positive replay and tampered/missing evidence. No test fixtures populate product surfaces. Network archival verification and public publication remain distinct gates.
 
 Unrecognized instance events return incomplete; frozen-window mutations fail. Selection and payout checks are reported only when those actions occurred. Participant account cleanup is currently unsupported rather than silently omitted.
+
+Completeness checks compare successful instance transactions in every fetched canonical block against RPC signature pagination. A missing signature in a fetched block is incomplete evidence. This does not establish completeness for a whole block omitted by the RPC. Daily payout reconciliation compares exact winner bitmap positions, not merely the number of set bits.

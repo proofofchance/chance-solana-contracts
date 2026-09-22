@@ -91,6 +91,19 @@ class RuntimeEvidenceTests(unittest.TestCase):
         self.assertEqual(result['accounting']['paidPrincipal'], 1_000_000)
         self.assertTrue(result['accounting']['financiallyClosed'])
 
+    def test_signature_omission_from_complete_block_is_rejected(self):
+        from replay_instance import replay
+        original=self.rpc.request
+        def omitted(method,params):
+            value=original(method,params)
+            if method=='getSignaturesForAddress':
+                # Other transactions in the same slot ensure the full block is fetched.
+                return value[1:]
+            return value
+        self.rpc.request=omitted
+        with self.assertRaisesRegex(Incomplete, 'omitted from signature history'):
+            replay(self.rpc,self.inspect())
+
     def test_unknown_program_event_cannot_silently_pass(self):
         from replay_instance import replay
         for row in self.rpc.fixture['history']:
@@ -179,6 +192,15 @@ class DailyReplayTests(unittest.TestCase):
         self.assertEqual(len(report['winners']), 2)
         self.assertEqual(report['accounting']['paidPrincipal'], 6_000_000)
         self.assertTrue(report['accounting']['financiallyClosed'])
+
+    def test_wrong_paid_positions_with_correct_count_are_rejected(self):
+        from replay_instance import replay
+        report=inspect(self.rpc,self.rpc.genesis,self.data['registry'],self.data['inventory'])
+        bits=int.from_bytes(report['state']['paid_winners_bitmap'],'little')
+        self.assertNotEqual(bits,0)
+        report['state']['paid_winners_bitmap']=(bits << 1).to_bytes(32,'little')
+        with self.assertRaisesRegex(Mismatch,'Paid bitmap differs'):
+            replay(self.rpc,report)
 
     def test_changed_attestation_calldata_is_rejected(self):
         for row in self.rpc.fixture['history']:

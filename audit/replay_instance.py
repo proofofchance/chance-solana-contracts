@@ -254,7 +254,8 @@ def replay(rpc, report, history=None):
         check(state['winners_count']==(len(selected) if vested else 0),'Winner count differs from history')
         if vested:
             check(state['winners_merkle_root']==computed['commitment'],'State winner commitment differs from history')
-            check(sum(byte.bit_count() for byte in state['paid_winners_bitmap'])==len(paid),'Paid bitmap differs from history')
+            expected_bitmap=sum(1 << index for index,wallet in enumerate(selected) if wallet in paid)
+            check(int.from_bytes(state['paid_winners_bitmap'],'little')==expected_bitmap,'Paid bitmap differs from history')
     check(report['escrow']['balance']>=funded-paid_principal,'Vault cannot cover outstanding principal')
     if selected and not vested and not refunded: unknowns.append('Selection is provisional; vesting is not complete')
     checks += ['canonical_creation','participant_inventory','attestation_authorization','plaintext_reveals']

@@ -73,11 +73,16 @@ def transactions(rpc, report):
         for index, record in enumerate(block['transactions']):
             signatures_in_tx = record['transaction']['signatures']
             signature = signatures_in_tx[0]
+            meta = record.get('meta')
+            if meta is None:
+                raise Incomplete('Historical transaction metadata is unavailable')
+            message = record['transaction']['message']
+            keys = message['accountKeys'] + meta.get('loadedAddresses', {}).get('writable', []) + meta.get('loadedAddresses', {}).get('readonly', [])
+            if meta['err'] is None and address in keys and signature not in wanted:
+                raise Incomplete('Successful instance transaction omitted from signature history')
             if signature not in wanted:
                 continue
-            check(wanted[signature]['slot'] == slot and record['meta'] is not None and record['meta']['err'] is None, 'Signature history differs from block transaction')
-            message = record['transaction']['message']
-            keys = message['accountKeys'] + record['meta'].get('loadedAddresses', {}).get('writable', []) + record['meta'].get('loadedAddresses', {}).get('readonly', [])
+            check(wanted[signature]['slot'] == slot and meta['err'] is None, 'Signature history differs from block transaction')
             check(address in keys, 'Transaction does not reference the selected instance')
             found.add(signature)
             result.append({'slot':slot, 'blockhash':block['blockhash'], 'index':index, 'signature':signature,
