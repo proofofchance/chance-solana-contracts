@@ -1,0 +1,46 @@
+[package]
+name = "giveaways"
+version = "0.1.0"
+description = "ProofOfChance Giveaways Program - Transparent brand giveaways with proof-of-chance winner selection"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/proofofchance/proofofchance"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "giveaways"
+
+[features]
+allow-early-upload = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+default = []
+
+[dependencies]
+anchor-lang = { version = "0.32.1", features = ["init-if-needed"] }
+anchor-spl = "0.32.1"
+solana-program = "2.3.0"
+sha2 = "0.10.8"
+bytemuck = "1.14.0"
+hex = "0.4.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chance-registry-wire = { path = "../../crates/registry-wire" }
+
+[workspace]
+members = ["."]
+resolver = "2"
+
+[profile.dev]
+# Keep project-level symbols while shrinking workspace debug artifacts.
+debug = 1
+incremental = true
+
+[profile.dev.package."*"]
+debug = 0
+
+[profile.release]
+overflow-checks = true

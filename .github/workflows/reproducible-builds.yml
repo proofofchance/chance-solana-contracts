@@ -1,0 +1,78 @@
+name: Solana reproducible builds
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [daily_lottery, giveaways, chance_registry]
+    env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+      BUILD_IMAGE: solanafoundation/solana-verifiable-build@sha256:ff3b148fb6adc3025c46ac38f132f473ccbdc4391f253234d98aa6519aec07f8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install pinned verifier binary
+        run: |
+          curl --fail --location --retry 3 https://github.com/solana-foundation/solana-verifiable-build/releases/download/v0.4.11/solana-verify-linux -o "$RUNNER_TEMP/solana-verify"
+          printf '%s  %s\n' '2b0cf244902cf9324396db05fa38ea14c5ace3e05e57739b06be4f6e6c10b437' "$RUNNER_TEMP/solana-verify" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/solana-verify"
+          "$RUNNER_TEMP/solana-verify" --version
+      - name: Build two clean trees of the exact candidate commit
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/second-build" HEAD
+          "$RUNNER_TEMP/solana-verify" build --library-name '${{ matrix.library }}' --base-image "$BUILD_IMAGE" "$GITHUB_WORKSPACE" -- -Znext-lockfile-bump
+          "$RUNNER_TEMP/solana-verify" build --library-name '${{ matrix.library }}' --base-image "$BUILD_IMAGE" "$RUNNER_TEMP/second-build" -- -Znext-lockfile-bump
+          cmp "target/deploy/${{ matrix.library }}.so" "$RUNNER_TEMP/second-build/target/deploy/${{ matrix.library }}.so"
+          mkdir -p releases/ci
+          sha256sum "target/deploy/${{ matrix.library }}.so" > 'releases/ci/${{ matrix.library }}.sha256'
+          git rev-parse HEAD > releases/ci/commit.txt
+          printf '%s\n' "$BUILD_IMAGE" > releases/ci/build-image.txt
+      - name: Record public source and executable manifest
+        run: |
+          python3 tools/build_manifest.py --repository "https://github.com/$GITHUB_REPOSITORY" --commit "$(git rev-parse HEAD)" --library '${{ matrix.library }}' --elf 'target/deploy/${{ matrix.library }}.so' --output 'releases/ci/${{ matrix.library }}.manifest.json'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reproducible-${{ matrix.library }}
+          path: |
+            target/deploy/${{ matrix.library }}.so
+            releases/ci/
+
+  runtime-tests:
+    needs: reproduce
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: reproducible-*
+          merge-multiple: true
+          path: .
+      - run: rustup toolchain install 1.89.0 --profile minimal
+      - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
+      - run: cargo test --locked --manifest-path programs/daily-lottery-v1/Cargo.toml
+      - name: Export real SBF audit evidence
+        env:
+          CHANCE_AUDIT_FIXTURE: ${{ runner.temp }}/giveaway-audit.json
+          CHANCE_DAILY_AUDIT_FIXTURE: ${{ runner.temp }}/daily-audit.json
+        run: cargo test --locked --manifest-path programs/registry/Cargo.toml
+      - name: Verify account schemas and replay SBF evidence
+        env:
+          CHANCE_AUDIT_FIXTURE: ${{ runner.temp }}/giveaway-audit.json
+          CHANCE_DAILY_AUDIT_FIXTURE: ${{ runner.temp }}/daily-audit.json
+        run: |
+          python3 tools/export_schemas.py
+          git diff --exit-code -- audit/schemas/accounts-v1.json
+          python3 -m unittest discover -s audit/tests -v
+      - run: cargo test --locked --lib --manifest-path programs/giveaways-v1/Cargo.toml

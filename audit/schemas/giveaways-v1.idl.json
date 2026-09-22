@@ -1,0 +1,2273 @@
+{
+  "address": "DUMRJ15A2ivmUNDK6EX7wfRQ1cYw4vw5ewSyT8xSJuRG",
+  "metadata": {
+    "name": "giveaways",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "ProofOfChance Giveaways Program - Transparent brand giveaways with proof-of-chance winner selection",
+    "repository": "https://github.com/proofofchance/proofofchance"
+  },
+  "instructions": [
+    {
+      "name": "attest_reveal",
+      "docs": [
+        "Verify and include the participant's committed reveal directly on-chain.",
+        "This path does not require a provider receipt."
+      ],
+      "discriminator": [
+        113,
+        187,
+        216,
+        247,
+        220,
+        0,
+        130,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "participant_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  114,
+                  116,
+                  105,
+                  99,
+                  105,
+                  112,
+                  97,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "lucky_words",
+          "type": "string"
+        },
+        {
+          "name": "salt",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "attest_uploaded",
+      "docs": [
+        "Attest that proof-of-chance has been uploaded to provider",
+        "",
+        "Anti-censorship mechanism - provider must include all attested participants.",
+        "Can only be called during upload/attestation window.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[]` Giveaway account",
+        "2. `[writable]` Participant account",
+        "3. `[signer]` Participant wallet"
+      ],
+      "discriminator": [
+        6,
+        141,
+        86,
+        24,
+        214,
+        68,
+        219,
+        131
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "participant_account",
+          "writable": true
+        },
+        {
+          "name": "participant",
+          "docs": [
+            "not need to sign, so any fee payer can relay an already-issued receipt."
+          ]
+        },
+        {
+          "name": "instructions_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "begin_upload_phase",
+      "docs": [
+        "Begin upload phase immediately",
+        "",
+        "Authority-only instruction to start upload/attestation phase now.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[signer]` Authority"
+      ],
+      "discriminator": [
+        186,
+        219,
+        114,
+        61,
+        143,
+        157,
+        9,
+        150
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "bind_registry",
+      "docs": [
+        "One-time canonical registry binding, before any instance is created."
+      ],
+      "discriminator": [
+        173,
+        242,
+        89,
+        1,
+        153,
+        173,
+        129,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "registry_program"
+        },
+        {
+          "name": "registry_config"
+        },
+        {
+          "name": "release"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_participant",
+      "docs": [
+        "Close a participant account after giveaway settlement and reclaim rent",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[]` Giveaway account",
+        "2. `[writable]` Participant account",
+        "3. `[signer, writable]` Participant wallet"
+      ],
+      "discriminator": [
+        192,
+        162,
+        92,
+        5,
+        148,
+        191,
+        207,
+        151
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway"
+        },
+        {
+          "name": "participant_account",
+          "writable": true
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_giveaway",
+      "docs": [
+        "Create a new giveaway with locked funds",
+        "",
+        "Creator deposits the configured total payout amount. Service fee is",
+        "taken from that amount during successful payout settlement.",
+        "Giveaway parameters are stored on-chain for transparency.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account (PDA: [\"giveaway\", config, id])",
+        "2. `[writable]` Vault account (PDA: [\"vault\", giveaway])",
+        "3. `[signer, writable]` Creator (funds source)",
+        "4. `[]` Instructions sysvar"
+      ],
+      "discriminator": [
+        218,
+        174,
+        65,
+        113,
+        58,
+        121,
+        85,
+        254
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true
+        },
+        {
+          "name": "giveaway",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  105,
+                  118,
+                  101,
+                  97,
+                  119,
+                  97,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              },
+              {
+                "kind": "arg",
+                "path": "giveaway_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "registry_program"
+        },
+        {
+          "name": "registry_config",
+          "writable": true
+        },
+        {
+          "name": "release"
+        },
+        {
+          "name": "release_signer"
+        },
+        {
+          "name": "registry_entry",
+          "writable": true
+        },
+        {
+          "name": "business_key",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "giveaway_id",
+          "type": "u64"
+        },
+        {
+          "name": "total_payout_lamports",
+          "type": "u64"
+        },
+        {
+          "name": "number_of_winners",
+          "type": "u32"
+        },
+        {
+          "name": "active_start_unix",
+          "type": "i64"
+        },
+        {
+          "name": "active_deadline_unix",
+          "type": "i64"
+        },
+        {
+          "name": "upload_duration_secs",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "create_giveaway_with_nonce",
+      "docs": [
+        "Durable creator-supplied nonce prevents duplicate creation across releases."
+      ],
+      "discriminator": [
+        63,
+        55,
+        165,
+        128,
+        66,
+        215,
+        112,
+        227
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true
+        },
+        {
+          "name": "giveaway",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  105,
+                  118,
+                  101,
+                  97,
+                  119,
+                  97,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              },
+              {
+                "kind": "arg",
+                "path": "giveaway_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "registry_program"
+        },
+        {
+          "name": "registry_config",
+          "writable": true
+        },
+        {
+          "name": "release"
+        },
+        {
+          "name": "release_signer"
+        },
+        {
+          "name": "registry_entry",
+          "writable": true
+        },
+        {
+          "name": "business_key",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "giveaway_id",
+          "type": "u64"
+        },
+        {
+          "name": "total_payout_lamports",
+          "type": "u64"
+        },
+        {
+          "name": "number_of_winners",
+          "type": "u32"
+        },
+        {
+          "name": "active_start_unix",
+          "type": "i64"
+        },
+        {
+          "name": "active_deadline_unix",
+          "type": "i64"
+        },
+        {
+          "name": "upload_duration_secs",
+          "type": "u32"
+        },
+        {
+          "name": "creator_nonce",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "disqualify_participant",
+      "docs": [
+        "Disqualify a participant entry",
+        "",
+        "Only giveaway creator can disqualify participants.",
+        "All disqualifications are logged for transparency.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[writable]` Participant account",
+        "3. `[signer]` Creator"
+      ],
+      "discriminator": [
+        188,
+        35,
+        64,
+        136,
+        181,
+        234,
+        6,
+        243
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "participant_account",
+          "writable": true
+        },
+        {
+          "name": "creator",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "reason_code",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "extend_active_deadline",
+      "docs": [
+        "Extend active deadline (only before current deadline)",
+        "",
+        "Allows creator to extend participation window.",
+        "Cannot shorten or extend after deadline has passed.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[signer]` Creator"
+      ],
+      "discriminator": [
+        232,
+        46,
+        166,
+        63,
+        218,
+        40,
+        222,
+        82
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "creator",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_deadline_unix",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "finalize_winners",
+      "docs": [
+        "Finalize winners and store merkle commitment",
+        "",
+        "Provider-authorized instruction that processes a chunk of participants.",
+        "Once every participant is processed, stores the winner commitment",
+        "on-chain for batch settlement verification.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[writable]` Vault account",
+        "3. `[writable]` WinnersLedger account (PDA: [\"winners_ledger\", giveaway])",
+        "4. `[writable]` FinalizationLedger account (PDA: [\"finalization_root_v2\", giveaway])",
+        "5. `[signer]` Authority",
+        "6. `[]` System program",
+        "7..N. `[writable]` Reveal-included participant accounts for this chunk"
+      ],
+      "discriminator": [
+        186,
+        149,
+        55,
+        182,
+        106,
+        221,
+        127,
+        126
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "vault"
+        },
+        {
+          "name": "winners_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  105,
+                  110,
+                  110,
+                  101,
+                  114,
+                  115,
+                  95,
+                  114,
+                  111,
+                  111,
+                  116,
+                  95,
+                  118,
+                  50
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "finalization_ledger",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  105,
+                  110,
+                  97,
+                  108,
+                  105,
+                  122,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  95,
+                  114,
+                  111,
+                  111,
+                  116,
+                  95,
+                  118,
+                  50
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Service-provider authority funds and advances every finalization chunk."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "docs": [
+        "Initialize the giveaways system configuration",
+        "",
+        "Sets up the global config account with authority and default parameters.",
+        "Can only be called once per deployment.",
+        "",
+        "Accounts expected:",
+        "0. `[writable]` Config account (PDA: [\"config\"])",
+        "1. `[signer]` Authority (becomes config.authority)",
+        "2. `[]` System program"
+      ],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "service_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "default_active_duration_secs",
+          "type": "u32"
+        },
+        {
+          "name": "default_upload_duration_secs",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "lock_winners",
+      "docs": [
+        "Lock winners to prevent further changes",
+        "",
+        "Irreversible action that enables settlement.",
+        "No more disqualifications or recomputes allowed after this.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[writable]` WinnersLedger account",
+        "3. `[signer]` Creator"
+      ],
+      "discriminator": [
+        110,
+        19,
+        177,
+        175,
+        148,
+        221,
+        233,
+        124
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "winners_ledger",
+          "writable": true
+        },
+        {
+          "name": "creator"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "participate",
+      "docs": [
+        "Participate in a giveaway",
+        "",
+        "Submit proof text and proof-of-chance commitment.",
+        "Can be called multiple times to update entry before deadline.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[writable]` Participant account (PDA: [\"participant\", giveaway, wallet])",
+        "3. `[signer]` Participant wallet",
+        "4. `[]` System program"
+      ],
+      "discriminator": [
+        71,
+        30,
+        209,
+        149,
+        172,
+        95,
+        73,
+        193
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "participant_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  114,
+                  116,
+                  105,
+                  99,
+                  105,
+                  112,
+                  97,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "commitment_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "proof_text",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "recompute_winners",
+      "docs": [
+        "Recompute winners after disqualifications",
+        "",
+        "Disabled in the scalable finalization protocol. Disqualifications happen",
+        "before upload; `finalize_winners` processes the resulting eligible set in chunks.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[writable]` WinnersLedger account",
+        "3. `[signer]` Creator or Authority",
+        "4..N. `[]` All participant accounts"
+      ],
+      "discriminator": [
+        27,
+        201,
+        108,
+        213,
+        35,
+        255,
+        71,
+        248
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "winners_ledger",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "settle_giveaway",
+      "docs": [
+        "Refund a giveaway that never reached winner finalization",
+        "",
+        "Handles no participants, no attesters, and expired omitted-reveal remediation",
+        "without initializing a winners ledger.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[writable]` Vault account",
+        "3. `[signer, writable]` Creator",
+        "4. `[signer]` Authority (can be same as creator)"
+      ],
+      "discriminator": [
+        93,
+        234,
+        177,
+        95,
+        226,
+        202,
+        4,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "creator",
+          "writable": true
+        },
+        {
+          "name": "authority"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "settle_no_eligible_giveaway",
+      "docs": [
+        "Refund a finalized giveaway with zero eligible winners",
+        "",
+        "Requires an existing winners ledger proving finalization completed with",
+        "`winners_count == 0`. This instruction never initializes the ledger.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[writable]` Vault account",
+        "3. `[]` WinnersLedger account (PDA: [\"winners_ledger\", giveaway])",
+        "4. `[signer, writable]` Creator",
+        "5. `[signer]` Authority (can be same as creator)"
+      ],
+      "discriminator": [
+        120,
+        38,
+        63,
+        122,
+        100,
+        6,
+        176,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "winners_ledger"
+        },
+        {
+          "name": "creator",
+          "writable": true
+        },
+        {
+          "name": "authority"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "settle_payout_batch",
+      "docs": [
+        "Process a batch of winner payouts",
+        "",
+        "Verifies merkle proofs and transfers funds directly to winners.",
+        "Can be called multiple times to process all winners in batches.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[writable]` Vault account",
+        "3. `[writable]` WinnersLedger account",
+        "4. `[signer, writable]` Authority",
+        "5. `[writable]` Creator refund account",
+        "6..N. `[writable]` Winner wallet accounts"
+      ],
+      "discriminator": [
+        189,
+        57,
+        242,
+        103,
+        75,
+        88,
+        191,
+        6
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "winners_ledger",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "writable": true
+        },
+        {
+          "name": "creator",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "batch_index",
+          "type": "u32"
+        },
+        {
+          "name": "winners",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "WinnerProof"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_service_charge",
+      "docs": [
+        "Update service charge rate (admin only)",
+        "",
+        "Updates the global service fee rate.",
+        "Only affects new giveaways created after this change.",
+        "",
+        "Accounts expected:",
+        "0. `[writable]` Config account",
+        "1. `[signer]` Authority"
+      ],
+      "discriminator": [
+        104,
+        137,
+        83,
+        181,
+        20,
+        238,
+        93,
+        3
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_service_fee_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "upload_reveals",
+      "docs": [
+        "Upload batch of participant reveals",
+        "",
+        "Provider uploads plaintext proof-of-chance data for entropy generation.",
+        "Publication waits for the deadline or every eligible participant to",
+        "attest. All attested participants must be included before settlement.",
+        "",
+        "Accounts expected:",
+        "0. `[]` Config account",
+        "1. `[writable]` Giveaway account",
+        "2. `[signer]` Authority",
+        "3..N. `[writable]` Participant accounts"
+      ],
+      "discriminator": [
+        168,
+        180,
+        22,
+        121,
+        59,
+        152,
+        191,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "config"
+        },
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "reveals",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "RevealData"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "FinalizationLedger",
+      "discriminator": [
+        93,
+        87,
+        45,
+        122,
+        83,
+        123,
+        7,
+        46
+      ]
+    },
+    {
+      "name": "Giveaway",
+      "discriminator": [
+        47,
+        139,
+        46,
+        45,
+        143,
+        147,
+        50,
+        181
+      ]
+    },
+    {
+      "name": "Participant",
+      "discriminator": [
+        32,
+        142,
+        108,
+        79,
+        247,
+        179,
+        54,
+        6
+      ]
+    },
+    {
+      "name": "WinnersLedger",
+      "discriminator": [
+        114,
+        215,
+        195,
+        197,
+        58,
+        227,
+        19,
+        137
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Unauthorized: Only the authority can perform this action"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidInstruction",
+      "msg": "Invalid instruction: Operation not allowed in current state"
+    },
+    {
+      "code": 6002,
+      "name": "GiveawayAlreadySettled",
+      "msg": "Giveaway already settled: Cannot modify settled giveaway"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidTiming",
+      "msg": "Invalid timing: Start time must be before deadline"
+    },
+    {
+      "code": 6004,
+      "name": "ActiveWindowClosed",
+      "msg": "Active window closed: Cannot participate after deadline"
+    },
+    {
+      "code": 6005,
+      "name": "ActiveWindowNotStarted",
+      "msg": "Active window not started: Cannot participate before start time"
+    },
+    {
+      "code": 6006,
+      "name": "UploadWindowClosed",
+      "msg": "Upload window closed: Cannot attest after upload deadline"
+    },
+    {
+      "code": 6007,
+      "name": "UploadWindowNotStarted",
+      "msg": "Upload window not started: Cannot attest before upload start"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidAttestation",
+      "msg": "Invalid attestation: Provider receipt signature is invalid or missing"
+    },
+    {
+      "code": 6009,
+      "name": "SettlementNotReady",
+      "msg": "Settlement not ready: Upload window must end or all eligible participants must attest"
+    },
+    {
+      "code": 6010,
+      "name": "TextTooLong",
+      "msg": "Text too long: Exceeds maximum allowed length"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidServiceFee",
+      "msg": "Invalid service fee: Must be between 0 and 9999 basis points"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidWinnerCount",
+      "msg": "Invalid winner count: Must be between 1 and 1000"
+    },
+    {
+      "code": 6013,
+      "name": "TooManyParticipants",
+      "msg": "Participant limit reached for this giveaway"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidDuration",
+      "msg": "Invalid duration: Duration outside allowed range"
+    },
+    {
+      "code": 6015,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds: Not enough lamports for payout and fees"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidReveal",
+      "msg": "Invalid reveal: Plaintext does not match commitment hash"
+    },
+    {
+      "code": 6017,
+      "name": "ParticipantNotFound",
+      "msg": "Participant not found: No participation record exists"
+    },
+    {
+      "code": 6018,
+      "name": "AlreadyAttested",
+      "msg": "Already attested: Participant has already attested upload"
+    },
+    {
+      "code": 6019,
+      "name": "NotAttested",
+      "msg": "Not attested: Participant must attest before settlement"
+    },
+    {
+      "code": 6020,
+      "name": "AlreadyDisqualified",
+      "msg": "Already disqualified: Participant is already disqualified"
+    },
+    {
+      "code": 6021,
+      "name": "WinnersNotComputed",
+      "msg": "Winners not computed: Must finalize winners before settlement"
+    },
+    {
+      "code": 6022,
+      "name": "WinnersLocked",
+      "msg": "Winners locked: Cannot modify winners after locking"
+    },
+    {
+      "code": 6023,
+      "name": "WinnersNotLocked",
+      "msg": "Winners not locked: Winner set must be locked before payout settlement"
+    },
+    {
+      "code": 6024,
+      "name": "InvalidMerkleProof",
+      "msg": "Invalid merkle proof: Proof verification failed"
+    },
+    {
+      "code": 6025,
+      "name": "AlreadyPaid",
+      "msg": "Already paid: Winner has already been paid"
+    },
+    {
+      "code": 6026,
+      "name": "InvalidBatch",
+      "msg": "Invalid batch: Batch index out of range"
+    },
+    {
+      "code": 6027,
+      "name": "DeadlinePassed",
+      "msg": "Deadline passed: Cannot extend deadline after it has passed"
+    },
+    {
+      "code": 6028,
+      "name": "CannotShorten",
+      "msg": "Cannot shorten: New deadline must be later than current"
+    },
+    {
+      "code": 6029,
+      "name": "MathOverflow",
+      "msg": "Math overflow: Arithmetic operation overflowed"
+    },
+    {
+      "code": 6030,
+      "name": "DivisionByZero",
+      "msg": "Division by zero: Cannot divide by zero"
+    },
+    {
+      "code": 6031,
+      "name": "InvalidAccount",
+      "msg": "Invalid account: Account does not match expected PDA"
+    },
+    {
+      "code": 6032,
+      "name": "AccountNotWritable",
+      "msg": "Account not writable: Account must be writable for this operation"
+    },
+    {
+      "code": 6033,
+      "name": "MissingSigner",
+      "msg": "Missing signer: Required signature not provided"
+    },
+    {
+      "code": 6034,
+      "name": "InvalidProgram",
+      "msg": "Invalid program: Account not owned by expected program"
+    },
+    {
+      "code": 6035,
+      "name": "AccountAlreadyInitialized",
+      "msg": "Account already initialized: Cannot initialize twice"
+    },
+    {
+      "code": 6036,
+      "name": "AccountNotInitialized",
+      "msg": "Account not initialized: Account must be initialized first"
+    },
+    {
+      "code": 6037,
+      "name": "RevealAlreadyIncluded",
+      "msg": "Reveal already included: Participant reveal already processed"
+    },
+    {
+      "code": 6038,
+      "name": "MissingAttestedParticipants",
+      "msg": "Missing attested participants: Some attested participants not included in reveals"
+    },
+    {
+      "code": 6039,
+      "name": "NoEligibleParticipants",
+      "msg": "No eligible participants: Cannot compute winners without eligible participants"
+    },
+    {
+      "code": 6040,
+      "name": "GiveawayNotFound",
+      "msg": "Giveaway not found: Giveaway account does not exist"
+    },
+    {
+      "code": 6041,
+      "name": "InvalidGiveawayId",
+      "msg": "Invalid giveaway ID: Giveaway ID must be unique"
+    },
+    {
+      "code": 6042,
+      "name": "CreatorMismatch",
+      "msg": "Creator mismatch: Only giveaway creator can perform this action"
+    },
+    {
+      "code": 6043,
+      "name": "InvalidReasonCode",
+      "msg": "Invalid reason code: Disqualification reason code is invalid"
+    },
+    {
+      "code": 6044,
+      "name": "EarlyUploadDisabled",
+      "msg": "Early upload disabled: Build must enable the allow-early-upload feature"
+    },
+    {
+      "code": 6045,
+      "name": "RevealPublicationNotReady",
+      "msg": "Reveal publication not ready: Upload window must end or all eligible participants must attest"
+    }
+  ],
+  "types": [
+    {
+      "name": "Config",
+      "docs": [
+        "Global system configuration",
+        "",
+        "Stores authority and default parameters for the giveaways program.",
+        "There is only one Config account per program deployment.",
+        "",
+        "## PDA Seeds",
+        "`[\"config\"]`"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "Program authority who can update config and perform admin operations"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "service_fee_bps",
+            "docs": [
+              "Service fee rate in basis points (0-9999, where 10000 = 100%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "default_active_duration_secs",
+            "docs": [
+              "Default active duration in seconds for new giveaways"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "default_upload_duration_secs",
+            "docs": [
+              "Default upload/attestation duration in seconds for new giveaways"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "created_at_unix",
+            "docs": [
+              "When this config was created"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "last_updated_unix",
+            "docs": [
+              "When this config was last updated"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "next_giveaway_id",
+            "docs": [
+              "Next sequential giveaway id (starts at 1)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "registry_program",
+            "docs": [
+              "Reserved space for future fields"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "registry_config",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FinalizationLedger",
+      "serialization": "bytemuckunsafe",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_version",
+            "type": "u16"
+          },
+          {
+            "name": "recompute_version",
+            "type": "u32"
+          },
+          {
+            "name": "phase",
+            "type": "u8"
+          },
+          {
+            "name": "required_count",
+            "type": "u64"
+          },
+          {
+            "name": "processed_count",
+            "type": "u64"
+          },
+          {
+            "name": "eligible_count",
+            "type": "u64"
+          },
+          {
+            "name": "target_winners",
+            "type": "u32"
+          },
+          {
+            "name": "seed",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "participants_commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "prefix",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "prefix_len",
+            "type": "u8"
+          },
+          {
+            "name": "remaining_rank",
+            "type": "u64"
+          },
+          {
+            "name": "histogram",
+            "type": {
+              "array": [
+                "u64",
+                256
+              ]
+            }
+          },
+          {
+            "name": "threshold_key",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "threshold_found",
+            "type": "u8"
+          },
+          {
+            "name": "completed",
+            "type": "u8"
+          },
+          {
+            "name": "started_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "completed_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Giveaway",
+      "docs": [
+        "Individual giveaway instance state",
+        "",
+        "Each giveaway is a unique instance with its own participants, funds, and settlement.",
+        "The giveaway follows a strict lifecycle from creation through settlement.",
+        "",
+        "## PDA Seeds",
+        "`[\"giveaway\", config_pubkey, giveaway_id_le_bytes]`",
+        "",
+        "## Lifecycle Phases",
+        "1. **Active**: Accepting participation entries (active_start_unix to active_deadline_unix)",
+        "2. **Upload**: Participants upload PoC and attest (active_deadline_unix to upload_deadline_unix)",
+        "3. **Remediation**: Anyone can include signed/attested reveals omitted by the provider",
+        "4. **Settlement**: Winners compute only after all attested reveals are included",
+        "5. **Settled**: All winners paid and giveaway complete"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "docs": [
+              "Unique giveaway ID (sequential)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "config",
+            "docs": [
+              "Config account that created this giveaway"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "docs": [
+              "Creator wallet address"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "docs": [
+              "Vault account holding locked funds"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "Current status"
+            ],
+            "type": {
+              "defined": {
+                "name": "GiveawayStatus"
+              }
+            }
+          },
+          {
+            "name": "total_payout_lamports",
+            "docs": [
+              "Total payout amount in lamports"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "number_of_winners",
+            "docs": [
+              "Number of winners to select"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "service_fee_bps",
+            "docs": [
+              "Service fee rate snapshot (basis points)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "created_at_unix",
+            "docs": [
+              "When giveaway was created"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "active_start_unix",
+            "docs": [
+              "When active window starts"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "active_deadline_unix",
+            "docs": [
+              "When active window ends (participation deadline)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "upload_start_unix",
+            "docs": [
+              "When upload/attestation window starts (same as active_deadline_unix)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "upload_deadline_unix",
+            "docs": [
+              "When upload/attestation window ends"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "settlement_start_unix",
+            "docs": [
+              "When settlement began (0 if not started)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "participants_count",
+            "docs": [
+              "Total number of participants"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "attested_count",
+            "docs": [
+              "Number of participants who attested upload"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "provider_uploaded_count",
+            "docs": [
+              "Number of reveals uploaded by provider"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "poc_aggregate_hash",
+            "docs": [
+              "Aggregate hash of uploaded reveals, used as the deterministic entropy base"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "uploads_complete",
+            "docs": [
+              "Whether all attested reveals required for settlement have been uploaded"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "disqualified_count",
+            "docs": [
+              "Number of disqualified participants"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "winners_computed",
+            "docs": [
+              "Whether winners have been computed"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "winners_locked",
+            "docs": [
+              "Whether winners are locked (no more changes allowed)"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "recompute_version",
+            "docs": [
+              "Current recompute version"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "settled",
+            "docs": [
+              "Whether settlement is complete"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "remediation_start_unix",
+            "docs": [
+              "When omitted-reveal remediation began (0 if not active/needed)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "remediation_deadline_unix",
+            "docs": [
+              "When omitted-reveal remediation expires (0 if not active/needed)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "account_version",
+            "docs": [
+              "Serialized account layout version for controlled upgrades."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "provider_authority",
+            "docs": [
+              "Provider/fee authority fixed at creation for this event."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "settlement_deadline_unix",
+            "docs": [
+              "Absolute finalization cutoff, independent of when remediation starts."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved space for future fields."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                70
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GiveawayStatus",
+      "docs": [
+        "Status of a giveaway instance"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Settled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Participant",
+      "docs": [
+        "Individual participant state",
+        "",
+        "Each participant has one account per giveaway containing their",
+        "proof text, commitment hash, and participation status.",
+        "",
+        "## PDA Seeds",
+        "`[\"participant\", giveaway_pubkey, wallet_pubkey]`"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "giveaway",
+            "docs": [
+              "Giveaway this participant is enrolled in"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "docs": [
+              "Participant wallet address"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "commitment_hash",
+            "docs": [
+              "Proof-of-chance commitment hash (SHA256 of lucky_words || 0x1f || salt)"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "proof_text",
+            "docs": [
+              "Proof text submitted by participant (social links, handles, etc.)"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "attested_uploaded",
+            "docs": [
+              "Whether participant has attested to uploading reveal"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "attested_at_unix",
+            "docs": [
+              "When attestation was submitted (0 if not attested)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "reveal_included",
+            "docs": [
+              "Whether reveal has been included in provider upload"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "disqualified",
+            "docs": [
+              "Whether participant has been disqualified"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "disqualification_reason",
+            "docs": [
+              "Disqualification reason code (0 if not disqualified)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "disqualified_at_unix",
+            "docs": [
+              "When participant was disqualified (0 if not disqualified)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "created_at_unix",
+            "docs": [
+              "When this participant entry was created"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "last_updated_unix",
+            "docs": [
+              "When this participant entry was last updated"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved space for future fields"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RevealData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "participant",
+            "type": "pubkey"
+          },
+          {
+            "name": "lucky_words",
+            "type": "string"
+          },
+          {
+            "name": "salt",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WinnerProof",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "winner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "winner_index",
+            "type": "u32"
+          },
+          {
+            "name": "merkle_proof",
+            "docs": [
+              "Legacy ABI field; protocol v2 verifies the participant PDA directly."
+            ],
+            "type": {
+              "vec": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "WinnersLedger",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_version",
+            "type": "u16"
+          },
+          {
+            "name": "threshold_key",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "winners_commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "winners_count",
+            "type": "u32"
+          },
+          {
+            "name": "total_payout_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "per_winner_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "paid_count",
+            "type": "u32"
+          },
+          {
+            "name": "batches_processed",
+            "type": "u32"
+          },
+          {
+            "name": "recompute_version",
+            "type": "u32"
+          },
+          {
+            "name": "locked",
+            "type": "bool"
+          },
+          {
+            "name": "computed_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "locked_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "settlement_started_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "settlement_completed_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                128
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,922 @@
+{
+  "schema": 1,
+  "encoding": "borsh-little-endian",
+  "accounts": {
+    "registry": {
+      "Config": {
+        "discriminator": "4348524547303031",
+        "tagIsField": true,
+        "fields": [
+          {
+            "name": "tag",
+            "type": "[u8;8]"
+          },
+          {
+            "name": "schema",
+            "type": "u16"
+          },
+          {
+            "name": "authority",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "guardian",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "activation_delay",
+            "type": "u32"
+          },
+          {
+            "name": "release_count",
+            "type": "u64"
+          },
+          {
+            "name": "record_count",
+            "type": "u64"
+          },
+          {
+            "name": "instance_count",
+            "type": "u64"
+          }
+        ]
+      },
+      "Release": {
+        "discriminator": "434852454c303031",
+        "tagIsField": true,
+        "fields": [
+          {
+            "name": "tag",
+            "type": "[u8;8]"
+          },
+          {
+            "name": "registry",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "program",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "domain",
+            "type": "u8"
+          },
+          {
+            "name": "series",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "source_hash",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "executable_hash",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "sequence",
+            "type": "u64"
+          },
+          {
+            "name": "registered_slot",
+            "type": "u64"
+          },
+          {
+            "name": "eligible_at",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "successor",
+            "type": "[u8;32]"
+          }
+        ]
+      },
+      "Record": {
+        "discriminator": "4348524543303031",
+        "tagIsField": true,
+        "fields": [
+          {
+            "name": "tag",
+            "type": "[u8;8]"
+          },
+          {
+            "name": "registry",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "sequence",
+            "type": "u64"
+          },
+          {
+            "name": "release",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "actor",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "successor",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "reason",
+            "type": "String"
+          }
+        ]
+      },
+      "Instance": {
+        "discriminator": "4348494e53303031",
+        "tagIsField": true,
+        "fields": [
+          {
+            "name": "tag",
+            "type": "[u8;8]"
+          },
+          {
+            "name": "registry",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "sequence",
+            "type": "u64"
+          },
+          {
+            "name": "release",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "owner_program",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "instance",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "creator",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "business_key",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "rules_hash",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "created_slot",
+            "type": "u64"
+          }
+        ]
+      },
+      "BusinessKey": {
+        "discriminator": "43484b4559303031",
+        "tagIsField": true,
+        "fields": [
+          {
+            "name": "tag",
+            "type": "[u8;8]"
+          },
+          {
+            "name": "entry",
+            "type": "[u8;32]"
+          }
+        ]
+      }
+    },
+    "daily": {
+      "Config": {
+        "discriminator": "9b0caae01efacc82",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "authority",
+            "type": "Pubkey"
+          },
+          {
+            "name": "ticket_price_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "service_charge_bps",
+            "type": "u16"
+          },
+          {
+            "name": "lottery_count",
+            "type": "u64"
+          },
+          {
+            "name": "buy_window_secs",
+            "type": "u32"
+          },
+          {
+            "name": "upload_window_secs",
+            "type": "u32"
+          },
+          {
+            "name": "max_winners_cap",
+            "type": "u32"
+          },
+          {
+            "name": "registry_program",
+            "type": "Pubkey"
+          },
+          {
+            "name": "registry_config",
+            "type": "Pubkey"
+          }
+        ]
+      },
+      "Lottery": {
+        "discriminator": "a2b61a0ca4d67003",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "config",
+            "type": "Pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "Pubkey"
+          },
+          {
+            "name": "created_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "buy_start_unix",
+            "type": "i64"
+          },
+          {
+            "name": "buy_deadline_unix",
+            "type": "i64"
+          },
+          {
+            "name": "upload_start_unix",
+            "type": "i64"
+          },
+          {
+            "name": "upload_deadline_unix",
+            "type": "i64"
+          },
+          {
+            "name": "settlement_start_unix",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "total_tickets",
+            "type": "u64"
+          },
+          {
+            "name": "total_funds",
+            "type": "u64"
+          },
+          {
+            "name": "provider_uploaded_count",
+            "type": "u64"
+          },
+          {
+            "name": "poc_aggregate_hash",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "uploads_complete",
+            "type": "bool"
+          },
+          {
+            "name": "settled",
+            "type": "bool"
+          },
+          {
+            "name": "vault",
+            "type": "Pubkey"
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "attested_count",
+            "type": "u64"
+          },
+          {
+            "name": "participants_count",
+            "type": "u64"
+          },
+          {
+            "name": "selected_number_of_winners",
+            "type": "u64"
+          },
+          {
+            "name": "winners_merkle_root",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "winners_count",
+            "type": "u64"
+          },
+          {
+            "name": "total_payout",
+            "type": "u64"
+          },
+          {
+            "name": "paid_winners_bitmap",
+            "type": "Vec<u8>"
+          },
+          {
+            "name": "settlement_batches_completed",
+            "type": "u32"
+          },
+          {
+            "name": "settlement_complete",
+            "type": "bool"
+          },
+          {
+            "name": "remediation_start_unix",
+            "type": "i64"
+          },
+          {
+            "name": "remediation_deadline_unix",
+            "type": "i64"
+          },
+          {
+            "name": "service_charge_bps",
+            "type": "u16"
+          },
+          {
+            "name": "ticket_price_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "account_version",
+            "type": "u16"
+          },
+          {
+            "name": "max_winners_cap",
+            "type": "u32"
+          },
+          {
+            "name": "settlement_deadline_unix",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": "[u8;114]"
+          }
+        ]
+      },
+      "Participant": {
+        "discriminator": "208e6c4ff7b33606",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "lottery",
+            "type": "Pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "Pubkey"
+          },
+          {
+            "name": "proof_of_chance_hash",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "tickets_bought",
+            "type": "u64"
+          },
+          {
+            "name": "attested_uploaded",
+            "type": "bool"
+          },
+          {
+            "name": "attested_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "voted_number_of_winners",
+            "type": "u64"
+          },
+          {
+            "name": "reveal_score",
+            "type": "u64"
+          },
+          {
+            "name": "participant_index",
+            "type": "u64"
+          },
+          {
+            "name": "reveal_digest",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "finalization_generation",
+            "type": "u32"
+          },
+          {
+            "name": "selected_generation",
+            "type": "u32"
+          },
+          {
+            "name": "selected_round",
+            "type": "u32"
+          }
+        ]
+      },
+      "FinalizationLedger": {
+        "discriminator": "5d572d7a537b072e",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "lottery",
+            "type": "Pubkey"
+          },
+          {
+            "name": "protocol_version",
+            "type": "u16"
+          },
+          {
+            "name": "phase",
+            "type": "u8"
+          },
+          {
+            "name": "generation",
+            "type": "u32"
+          },
+          {
+            "name": "required_count",
+            "type": "u64"
+          },
+          {
+            "name": "processed_count",
+            "type": "u64"
+          },
+          {
+            "name": "eligible_count",
+            "type": "u64"
+          },
+          {
+            "name": "total_eligible_tickets",
+            "type": "u64"
+          },
+          {
+            "name": "seed",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "participants_commitment",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "target_winners",
+            "type": "u32"
+          },
+          {
+            "name": "current_round",
+            "type": "u32"
+          },
+          {
+            "name": "selected_count",
+            "type": "u32"
+          },
+          {
+            "name": "selected_tickets_total",
+            "type": "u64"
+          },
+          {
+            "name": "round_processed_count",
+            "type": "u64"
+          },
+          {
+            "name": "round_remaining_tickets_seen",
+            "type": "u64"
+          },
+          {
+            "name": "round_draw_index",
+            "type": "u64"
+          },
+          {
+            "name": "pending_winner",
+            "type": "Pubkey"
+          },
+          {
+            "name": "pending_winner_tickets",
+            "type": "u64"
+          },
+          {
+            "name": "pending_winner_found",
+            "type": "bool"
+          },
+          {
+            "name": "has_last_wallet",
+            "type": "bool"
+          },
+          {
+            "name": "last_processed_wallet",
+            "type": "Pubkey"
+          },
+          {
+            "name": "winners_commitment",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "completed",
+            "type": "bool"
+          },
+          {
+            "name": "started_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "completed_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": "[u8;64]"
+          }
+        ]
+      },
+      "WinnerPage": {
+        "discriminator": "0e9ca15e19476b1f",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "lottery",
+            "type": "Pubkey"
+          },
+          {
+            "name": "generation",
+            "type": "u32"
+          },
+          {
+            "name": "page_index",
+            "type": "u32"
+          },
+          {
+            "name": "count",
+            "type": "u16"
+          },
+          {
+            "name": "reserved",
+            "type": "[u8;64]"
+          }
+        ]
+      },
+      "Vault": {
+        "discriminator": "d308e82b02987577",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "lottery",
+            "type": "Pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    "giveaway": {
+      "Config": {
+        "discriminator": "9b0caae01efacc82",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "authority",
+            "type": "Pubkey"
+          },
+          {
+            "name": "service_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "default_active_duration_secs",
+            "type": "u32"
+          },
+          {
+            "name": "default_upload_duration_secs",
+            "type": "u32"
+          },
+          {
+            "name": "created_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "last_updated_unix",
+            "type": "i64"
+          },
+          {
+            "name": "next_giveaway_id",
+            "type": "u64"
+          },
+          {
+            "name": "registry_program",
+            "type": "Pubkey"
+          },
+          {
+            "name": "registry_config",
+            "type": "Pubkey"
+          }
+        ]
+      },
+      "Giveaway": {
+        "discriminator": "2f8b2e2d8f9332b5",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "config",
+            "type": "Pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "Pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "Pubkey"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "total_payout_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "number_of_winners",
+            "type": "u32"
+          },
+          {
+            "name": "service_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "created_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "active_start_unix",
+            "type": "i64"
+          },
+          {
+            "name": "active_deadline_unix",
+            "type": "i64"
+          },
+          {
+            "name": "upload_start_unix",
+            "type": "i64"
+          },
+          {
+            "name": "upload_deadline_unix",
+            "type": "i64"
+          },
+          {
+            "name": "settlement_start_unix",
+            "type": "i64"
+          },
+          {
+            "name": "participants_count",
+            "type": "u64"
+          },
+          {
+            "name": "attested_count",
+            "type": "u64"
+          },
+          {
+            "name": "provider_uploaded_count",
+            "type": "u64"
+          },
+          {
+            "name": "poc_aggregate_hash",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "uploads_complete",
+            "type": "bool"
+          },
+          {
+            "name": "disqualified_count",
+            "type": "u64"
+          },
+          {
+            "name": "winners_computed",
+            "type": "bool"
+          },
+          {
+            "name": "winners_locked",
+            "type": "bool"
+          },
+          {
+            "name": "recompute_version",
+            "type": "u32"
+          },
+          {
+            "name": "settled",
+            "type": "bool"
+          },
+          {
+            "name": "remediation_start_unix",
+            "type": "i64"
+          },
+          {
+            "name": "remediation_deadline_unix",
+            "type": "i64"
+          },
+          {
+            "name": "account_version",
+            "type": "u16"
+          },
+          {
+            "name": "provider_authority",
+            "type": "Pubkey"
+          },
+          {
+            "name": "settlement_deadline_unix",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": "[u8;70]"
+          }
+        ]
+      },
+      "Participant": {
+        "discriminator": "208e6c4ff7b33606",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "Pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "Pubkey"
+          },
+          {
+            "name": "commitment_hash",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "proof_text",
+            "type": "String"
+          },
+          {
+            "name": "attested_uploaded",
+            "type": "bool"
+          },
+          {
+            "name": "attested_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "reveal_included",
+            "type": "bool"
+          },
+          {
+            "name": "disqualified",
+            "type": "bool"
+          },
+          {
+            "name": "disqualification_reason",
+            "type": "u8"
+          },
+          {
+            "name": "disqualified_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "created_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "last_updated_unix",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": "[u8;64]"
+          }
+        ]
+      },
+      "WinnersLedger": {
+        "discriminator": "72d7c3c53ae31389",
+        "tagIsField": false,
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "Pubkey"
+          },
+          {
+            "name": "protocol_version",
+            "type": "u16"
+          },
+          {
+            "name": "threshold_key",
+            "type": "[u8;64]"
+          },
+          {
+            "name": "winners_commitment",
+            "type": "[u8;32]"
+          },
+          {
+            "name": "winners_count",
+            "type": "u32"
+          },
+          {
+            "name": "total_payout_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "per_winner_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "paid_count",
+            "type": "u32"
+          },
+          {
+            "name": "batches_processed",
+            "type": "u32"
+          },
+          {
+            "name": "recompute_version",
+            "type": "u32"
+          },
+          {
+            "name": "locked",
+            "type": "bool"
+          },
+          {
+            "name": "computed_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "locked_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "settlement_started_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "settlement_completed_at_unix",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": "[u8;128]"
+          }
+        ]
+      }
+    }
+  },
+  "sourceSha256": {
+    "crates/registry-wire/src/lib.rs": "bd52bf9eadccc1fe6c3b70987cc74b4ab1dae0e4dbef1d58871b2b2bc392c839",
+    "programs/daily-lottery-v1/src/state/config.rs": "9c4edaae434759066da49e6919a6c953395255e42206a9d9923bdadf066bf11a",
+    "programs/daily-lottery-v1/src/state/lottery.rs": "873c0033760bdbd61ddec7e5d111f3649195155f5e6043de11b6b86562cad27d",
+    "programs/daily-lottery-v1/src/state/participant.rs": "2f054624c62a1da758298fcd00dc97517b430de4e4cb39c927fd43cff390bd1e",
+    "programs/daily-lottery-v1/src/state/finalization_ledger.rs": "09654fba78b16a74b303c64280bbd808046383891005db14256505e9972ea5c1",
+    "programs/daily-lottery-v1/src/state/vault.rs": "75fd7d28d4a041b4806ab6be46429a1d7c2a191c688f3128a5c9f515f78257d7",
+    "programs/giveaways-v1/src/state/config.rs": "ffde9407710738280781c35a872d24d83de4a7c1ca89ea1905c5f84a898ee0e3",
+    "programs/giveaways-v1/src/state/giveaway.rs": "1a9b9c037f1eeb9c3b793c27c88d8954142c78b491a014e20624da39657cc811",
+    "programs/giveaways-v1/src/state/participant.rs": "ab0c8c7ed4be6b3822695290a4388bcc12906e34faabe53e62533493e75d6097",
+    "programs/giveaways-v1/src/state/winners_ledger.rs": "ce2f0af1a659a68a0b91437be6e865b3a4c81c250078894eaa987f2f2209f6b5"
+  },
+  "limitations": [
+    "Giveaway zero-copy FinalizationLedger and native WinnerPage trailing entries require their explicit public layouts.",
+    "This account schema is not an Anchor instruction IDL."
+  ]
+}
