@@ -23,7 +23,38 @@ The registry creates two permanent accounts atomically:
 
 Daily business keys hash `chance-daily-key-v1 || series[32] || UTC_day_u64_le`. Daily creates use the frozen buy-start day. The new native instruction tag 19, `CreateScheduledLottery { buy_start_unix: i64 }`, supports future starts and rejects backdating. Legacy tag 2 starts immediately but has the same mandatory registry gate. Tag 18 binds the registry.
 
-Giveaway business keys hash `chance-giveaway-key-v1 || creator[32] || creator_nonce_u64_le`. `create_giveaway_with_nonce` exposes a durable client nonce across releases. The legacy create method uses its local giveaway ID as the nonce and can encounter legitimate cross-release collisions; new clients must use the explicit nonce method. Sequential local IDs still determine the giveaway PDA. Active starts cannot be backdated.
+Daily controllers use appended tag 20, `CreateScheduledLotteryChecked`, encoded
+as `20 || buy_start_unix_i64_le || expected_preset_hash[32]` (exactly 41 bytes).
+The hash is SHA-256 of `CHANCE_DAILY_PRESET_V1 || program[32] || config[32] ||
+registry_program[32] || registry_config[32] || authority[32] || ticket_price_u64_le ||
+service_charge_bps_u16_le || buy_window_u32_le || upload_window_u32_le ||
+max_winners_cap_u32_le`. The allocation counter is excluded. `Config::preset_hash`
+provides the canonical SDK calculation. Program executable/registry release hashes
+and network genesis are separately pinned by the release descriptor.
+
+Preset mismatch returns appended custom error `PresetMismatch` before account
+allocation or registry CPI. Existing tags, error numbers, Config/Lottery account
+layouts and settlement instructions are preserved. The checked instruction uses
+the same eleven-account ordering and registry business key as tags 2/19. A new
+immutable program build is required to expose it; it does not update old programs.
+
+Giveaway business keys hash `chance-giveaway-key-v1 || creator[32] || creator_nonce_u64_le`. `create_giveaway_with_nonce` exposes a durable client nonce across releases. The legacy create method uses its local giveaway ID as the nonce and can encounter legitimate cross-release collisions. New clients use `create_giveaway_checked` with an explicit nonce and expected creation hash. Sequential local IDs still determine the giveaway PDA. Active starts cannot be backdated.
+
+The appended Anchor instruction `create_giveaway_checked` retains the existing
+eleven-account `CreateGiveaway` order and adds `creator_nonce: u64` plus
+`expected_creation_hash: [u8; 32]` to the explicit creation terms. The hash is
+SHA-256 over concatenated bytes in this exact order:
+`CHANCE_GIVEAWAY_CREATION_V1 || program[32] || config[32] ||
+registry_program[32] || registry_config[32] || provider_authority[32] ||
+service_fee_bps_u16_le || creator[32] || giveaway_id_u64_le ||
+payout_lamports_u64_le || winners_u32_le || active_start_i64_le ||
+active_deadline_i64_le || upload_duration_u32_le || creator_nonce_u64_le`.
+`Config::creation_hash` is the canonical source. Default durations are excluded
+because creation supplies explicit durations. The local allocation counter is
+already constrained by `giveaway_id`. A stale expected hash returns the appended
+`CreationConfigMismatch` error before vault funding or registry CPI. Existing
+account layouts and instruction methods remain available. This requires a new
+immutable program release; existing deployed programs do not gain the new ABI.
 
 A lamport donation cannot squat a canonical registry PDA: creation allocates and assigns an empty system-owned PDA with its signing seeds, topping up rent as needed. Existing registry-owned records always reject overwriting. Historical settlement instructions do not consult release status.
 

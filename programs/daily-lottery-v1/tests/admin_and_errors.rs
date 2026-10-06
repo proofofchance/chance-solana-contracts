@@ -61,6 +61,66 @@ fn setup_lottery(
 }
 
 #[test]
+fn checked_scheduled_creation_rejects_mismatch_and_preserves_daily_uniqueness() {
+    let program_id = Pubkey::new_unique();
+    let authority = Keypair::new();
+    let mut ctx = TestContext::new(program_id, &[&authority]);
+    let (config, _, _, _) = setup_lottery(&mut ctx, program_id, &authority);
+    let before: Config = read_after_disc(&ctx.get_account(config).unwrap().data);
+    let expected = before.preset_hash(&program_id, &config);
+    let start = 86_400i64;
+    let create = |id: u64, hash: [u8; 32]| {
+        let lottery = Pubkey::find_program_address(
+            &[b"lottery", config.as_ref(), &id.to_le_bytes()],
+            &program_id,
+        )
+        .0;
+        let vault = Pubkey::find_program_address(&[b"vault", lottery.as_ref()], &program_id).0;
+        SdkIx {
+            program_id,
+            accounts: vec![
+                AccountMeta::new(config, false),
+                AccountMeta::new(lottery, false),
+                AccountMeta::new(vault, false),
+                AccountMeta::new(authority.pubkey(), true),
+                AccountMeta::new_readonly(system_program::id(), false),
+            ],
+            data: borsh::to_vec(&Instruction::CreateScheduledLotteryChecked {
+                buy_start_unix: start,
+                expected_preset_hash: hash,
+            })
+            .unwrap(),
+        }
+    };
+    let mut stale = expected;
+    stale[0] ^= 1;
+    let failed = create(2, stale);
+    let round_address = failed.accounts[1].pubkey;
+    let vault_address = failed.accounts[2].pubkey;
+    common::assert_custom_error(
+        ctx.send_tx(vec![failed], &[&authority]).unwrap_err(),
+        Error::PresetMismatch as u32,
+    );
+    assert!(ctx.get_account(round_address).is_none());
+    assert!(ctx.get_account(vault_address).is_none());
+    let after_failure: Config = read_after_disc(&ctx.get_account(config).unwrap().data);
+    assert_eq!(after_failure.lottery_count, 1);
+    ctx.send_tx(vec![create(2, expected)], &[&authority])
+        .unwrap();
+    let round: Lottery = read_after_disc(&ctx.get_account(round_address).unwrap().data);
+    assert_eq!(round.buy_start_unix, start);
+    let after: Config = read_after_disc(&ctx.get_account(config).unwrap().data);
+    assert_eq!(after.lottery_count, 2);
+    assert_eq!(after.preset_hash(&program_id, &config), expected);
+    let duplicate = create(3, expected);
+    let duplicate_address = duplicate.accounts[1].pubkey;
+    assert!(ctx.send_tx(vec![duplicate], &[&authority]).is_err());
+    assert!(ctx.get_account(duplicate_address).is_none());
+    let after_duplicate: Config = read_after_disc(&ctx.get_account(config).unwrap().data);
+    assert_eq!(after_duplicate.lottery_count, 2);
+}
+
+#[test]
 fn active_rules_cannot_be_changed_by_authority() {
     let program_id = Pubkey::new_unique();
     let authority = Keypair::new();

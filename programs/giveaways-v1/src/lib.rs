@@ -160,6 +160,33 @@ pub mod giveaways {
         )
     }
 
+    /// Create only when the provider, fee, registry binding and creator terms match
+    /// the creator's reviewed SHA-256 digest.
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_giveaway_checked(
+        ctx: Context<CreateGiveaway>,
+        giveaway_id: u64,
+        total_payout_lamports: u64,
+        number_of_winners: u32,
+        active_start_unix: i64,
+        active_deadline_unix: i64,
+        upload_duration_secs: u32,
+        creator_nonce: u64,
+        expected_creation_hash: [u8; 32],
+    ) -> Result<()> {
+        instructions::create_giveaway::process_checked(
+            ctx,
+            giveaway_id,
+            total_payout_lamports,
+            number_of_winners,
+            active_start_unix,
+            active_deadline_unix,
+            upload_duration_secs,
+            creator_nonce,
+            expected_creation_hash,
+        )
+    }
+
     /// Participate in a giveaway
     ///
     /// Submit proof text and proof-of-chance commitment.

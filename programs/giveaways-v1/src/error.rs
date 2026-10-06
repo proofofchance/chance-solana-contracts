@@ -144,4 +144,7 @@ pub enum GiveawayError {
 
     #[msg("Reveal publication not ready: Upload window must end or all eligible participants must attest")]
     RevealPublicationNotReady,
+
+    #[msg("Creation settings changed since the creator approved the transaction")]
+    CreationConfigMismatch,
 }

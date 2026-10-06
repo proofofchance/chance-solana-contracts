@@ -8,6 +8,7 @@ use solana_program::pubkey::Pubkey;
 use solana_signer::Signer;
 use solana_system_interface::program as system;
 use solana_transaction::Transaction;
+use sha2::{Digest, Sha256};
 
 struct Fixture {
     svm: LiteSVM,
@@ -674,6 +675,82 @@ impl Fixture {
 #[test]
 fn real_giveaway_creator_nonce_gate_and_provider_timeout_refund() {
     giveaway_recovery_scenario(0);
+}
+
+#[test]
+fn checked_giveaway_creation_rejects_stale_terms_before_funding_or_registry_record() {
+    let mut f = Fixture::new();
+    let program = solana_program::pubkey!("DUMRJ15A2ivmUNDK6EX7wfRQ1cYw4vw5ewSyT8xSJuRG");
+    f.svm
+        .add_program_from_file(
+            program,
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/deploy/giveaways.so"),
+        )
+        .unwrap();
+    let rel = f.register_domain(program, wire::GIVEAWAY);
+    let cfg = Pubkey::find_program_address(&[b"config"], &program).0;
+    f.external(Instruction {
+        program_id: program,
+        accounts: vec![
+            M::new(cfg, false),
+            M::new(f.admin.pubkey(), true),
+            M::new_readonly(system::id(), false),
+        ],
+        data: anchor_data("initialize", &(500u16, 3_600u32, 3_600u32)),
+    })
+    .unwrap();
+    f.external(Instruction {
+        program_id: program,
+        accounts: vec![
+            M::new(cfg, false),
+            M::new_readonly(f.admin.pubkey(), true),
+            M::new_readonly(f.program, false),
+            M::new_readonly(f.cfg, false),
+            M::new_readonly(rel, false),
+        ],
+        data: anchor_data("bind_registry", &()),
+    })
+    .unwrap();
+    f.advance();
+    f.activate_large(rel, program);
+    let creator = Keypair::new();
+    f.svm.airdrop(&creator.pubkey(), 1_000_000_000).unwrap();
+    let start = f.svm.get_sysvar::<Clock>().unix_timestamp;
+    let mut creation = f.giveaway_create(program, cfg, rel, creator.pubkey(), 1, 42, start);
+    let mut hasher = Sha256::new();
+    hasher.update(b"CHANCE_GIVEAWAY_CREATION_V1");
+    hasher.update(program.as_ref());
+    hasher.update(cfg.as_ref());
+    hasher.update(f.program.as_ref());
+    hasher.update(f.cfg.as_ref());
+    hasher.update(f.admin.pubkey().as_ref());
+    hasher.update(500u16.to_le_bytes());
+    hasher.update(creator.pubkey().as_ref());
+    hasher.update(1u64.to_le_bytes());
+    hasher.update(1_000_000u64.to_le_bytes());
+    hasher.update(1u32.to_le_bytes());
+    hasher.update(start.to_le_bytes());
+    hasher.update((start + 3_600).to_le_bytes());
+    hasher.update(3_600u32.to_le_bytes());
+    hasher.update(42u64.to_le_bytes());
+    let expected: [u8; 32] = hasher.finalize().into();
+    let mut stale = expected;
+    stale[0] ^= 1;
+    creation.data = anchor_data(
+        "create_giveaway_checked",
+        &(1u64, 1_000_000u64, 1u32, start, start + 3_600, 3_600u32, 42u64, stale),
+    );
+    let initial_balance = f.svm.get_account(&creator.pubkey()).unwrap().lamports;
+    assert!(f.external_by(creation.clone(), &creator).is_err());
+    assert_eq!(f.state().instance_count, 0);
+    assert_eq!(f.svm.get_account(&creator.pubkey()).unwrap().lamports, initial_balance);
+    assert!(f.svm.get_account(&creation.accounts[1].pubkey).is_none());
+    creation.data = anchor_data(
+        "create_giveaway_checked",
+        &(1u64, 1_000_000u64, 1u32, start, start + 3_600, 3_600u32, 42u64, expected),
+    );
+    f.external_by(creation, &creator).unwrap();
+    assert_eq!(f.state().instance_count, 1);
 }
 
 #[test]

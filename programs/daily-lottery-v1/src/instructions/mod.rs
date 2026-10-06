@@ -120,7 +120,8 @@ pub enum Instruction {
     /// Create a new daily lottery
     ///
     /// Creates a new lottery instance with its associated vault.
-    /// Only one lottery can be active at a time.
+    /// The registry permits one lottery per series and UTC participation-start day.
+    /// Multiple lotteries may remain active concurrently.
     ///
     /// Accounts expected:
     /// 0. `[writable]` Config account
@@ -325,6 +326,12 @@ pub enum Instruction {
     BindRegistry,
     /// Create a lottery with an immutable future buy start.
     CreateScheduledLottery { buy_start_unix: i64 },
+    /// Tag 20: scheduled creation with a pinned effective configuration digest.
+    /// Existing tags and account layouts retain their original encoding.
+    CreateScheduledLotteryChecked {
+        buy_start_unix: i64,
+        expected_preset_hash: [u8; 32],
+    },
 }
 
 /// Instruction processing dispatcher
@@ -347,6 +354,17 @@ pub fn process_instruction(
 
     // Manual tag dispatch for stability - no enum deserialization
     match tag {
+        20 if instruction_data.len() == 41 => {
+            let start = i64::from_le_bytes(
+                instruction_data[1..9]
+                    .try_into()
+                    .map_err(|_| crate::error::Error::InvalidInstruction)?,
+            );
+            let expected = instruction_data[9..41]
+                .try_into()
+                .map_err(|_| crate::error::Error::InvalidInstruction)?;
+            create_lottery::process_checked(program_id, accounts, start, expected)
+        }
         18 if instruction_data.len() == 1 => registry::bind(program_id, accounts),
         19 if instruction_data.len() == 9 => {
             let start = i64::from_le_bytes(

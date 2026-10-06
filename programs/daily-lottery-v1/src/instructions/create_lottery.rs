@@ -43,6 +43,29 @@ pub fn process_scheduled(
     accounts: &[AccountInfo],
     buy_start: Option<i64>,
 ) -> ProgramResult {
+    process_with_preset(program_id, accounts, buy_start, None)
+}
+
+pub fn process_checked(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    buy_start: i64,
+    expected_preset_hash: [u8; 32],
+) -> ProgramResult {
+    process_with_preset(
+        program_id,
+        accounts,
+        Some(buy_start),
+        Some(expected_preset_hash),
+    )
+}
+
+fn process_with_preset(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    buy_start: Option<i64>,
+    expected_preset_hash: Option<[u8; 32]>,
+) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
     // Get accounts
@@ -72,6 +95,11 @@ pub fn process_scheduled(
     // Validate authority
     if authority_ai.key != &config.authority {
         return Err(Error::Unauthorized.into());
+    }
+    if expected_preset_hash
+        .is_some_and(|expected| expected != config.preset_hash(program_id, config_ai.key))
+    {
+        return Err(Error::PresetMismatch.into());
     }
 
     // Note: previously enforced a single active-lottery constraint via `open_active`.

@@ -60,6 +60,26 @@ pub struct Config {
 }
 
 impl Config {
+    /// Effective creation rules, excluding the mutable allocation counter.
+    /// All integers use little endian; the program/config/registry bind this digest
+    /// to one release. No account layout or legacy instruction encoding changes.
+    pub fn preset_hash(&self, program: &Pubkey, config: &Pubkey) -> [u8; 32] {
+        solana_sha256_hasher::hashv(&[
+            b"CHANCE_DAILY_PRESET_V1",
+            program.as_ref(),
+            config.as_ref(),
+            self.registry_program.as_ref(),
+            self.registry_config.as_ref(),
+            self.authority.as_ref(),
+            &self.ticket_price_lamports.to_le_bytes(),
+            &self.service_charge_bps.to_le_bytes(),
+            &self.buy_window_secs.to_le_bytes(),
+            &self.upload_window_secs.to_le_bytes(),
+            &self.max_winners_cap.to_le_bytes(),
+        ])
+        .to_bytes()
+    }
+
     /// Validates that the service charge is within acceptable bounds
     pub fn validate_service_charge(bps: u16) -> bool {
         bps < 10_000 // Must be less than 100%
@@ -95,6 +115,29 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn preset_survives_allocation_but_detects_rule_and_release_changes() {
+        let program = Pubkey::new_unique();
+        let address = Pubkey::new_unique();
+        let mut config = Config {
+            ticket_price_lamports: 10,
+            ..Config::default()
+        };
+        let expected = config.preset_hash(&program, &address);
+        config.next_lottery_id().unwrap();
+        assert_eq!(expected, config.preset_hash(&program, &address));
+        config.service_charge_bps = 500;
+        assert_ne!(expected, config.preset_hash(&program, &address));
+        assert_ne!(
+            config.preset_hash(&program, &address),
+            config.preset_hash(&Pubkey::new_unique(), &address)
+        );
+        assert_ne!(
+            config.preset_hash(&program, &address),
+            config.preset_hash(&program, &Pubkey::new_unique())
+        );
+    }
 
     #[test]
     fn test_validate_service_charge() {

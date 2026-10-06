@@ -401,6 +401,149 @@
       ]
     },
     {
+      "name": "create_giveaway_checked",
+      "docs": [
+        "Create only when the provider, fee, registry binding and creator terms match",
+        "the creator's reviewed SHA-256 digest."
+      ],
+      "discriminator": [
+        108,
+        235,
+        198,
+        178,
+        53,
+        220,
+        218,
+        209
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true
+        },
+        {
+          "name": "giveaway",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  105,
+                  118,
+                  101,
+                  97,
+                  119,
+                  97,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              },
+              {
+                "kind": "arg",
+                "path": "giveaway_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "registry_program"
+        },
+        {
+          "name": "registry_config",
+          "writable": true
+        },
+        {
+          "name": "release"
+        },
+        {
+          "name": "release_signer"
+        },
+        {
+          "name": "registry_entry",
+          "writable": true
+        },
+        {
+          "name": "business_key",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "giveaway_id",
+          "type": "u64"
+        },
+        {
+          "name": "total_payout_lamports",
+          "type": "u64"
+        },
+        {
+          "name": "number_of_winners",
+          "type": "u32"
+        },
+        {
+          "name": "active_start_unix",
+          "type": "i64"
+        },
+        {
+          "name": "active_deadline_unix",
+          "type": "i64"
+        },
+        {
+          "name": "upload_duration_secs",
+          "type": "u32"
+        },
+        {
+          "name": "creator_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "expected_creation_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "create_giveaway_with_nonce",
       "docs": [
         "Durable creator-supplied nonce prevents duplicate creation across releases."
@@ -1548,6 +1691,11 @@
       "code": 6045,
       "name": "RevealPublicationNotReady",
       "msg": "Reveal publication not ready: Upload window must end or all eligible participants must attest"
+    },
+    {
+      "code": 6046,
+      "name": "CreationConfigMismatch",
+      "msg": "Creation settings changed since the creator approved the transaction"
     }
   ],
   "types": [

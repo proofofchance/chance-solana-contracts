@@ -167,6 +167,10 @@ pub enum Error {
     /// Service charge updates are disabled in this build
     #[error("Service charge update disabled")]
     ServiceChargeUpdateDisabled,
+
+    /// Appended to preserve all existing custom error numbers.
+    #[error("Creation preset does not match approved rules")]
+    PresetMismatch,
 }
 
 impl From<Error> for ProgramError {

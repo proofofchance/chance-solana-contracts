@@ -5,6 +5,7 @@
 
 use crate::constants::*;
 use anchor_lang::prelude::*;
+use sha2::{Digest, Sha256};
 
 /// Global system configuration
 ///
@@ -42,6 +43,40 @@ pub struct Config {
 }
 
 impl Config {
+    /// Digest of the effective creation context and creator-supplied terms.
+    #[allow(clippy::too_many_arguments)]
+    pub fn creation_hash(
+        &self,
+        program: &Pubkey,
+        config: &Pubkey,
+        creator: &Pubkey,
+        giveaway_id: u64,
+        payout_lamports: u64,
+        winners: u32,
+        active_start: i64,
+        active_deadline: i64,
+        upload_duration: u32,
+        creator_nonce: u64,
+    ) -> [u8; 32] {
+        let mut hash = Sha256::new();
+        hash.update(b"CHANCE_GIVEAWAY_CREATION_V1");
+        hash.update(program.as_ref());
+        hash.update(config.as_ref());
+        hash.update(self.registry_program.as_ref());
+        hash.update(self.registry_config.as_ref());
+        hash.update(self.authority.as_ref());
+        hash.update(self.service_fee_bps.to_le_bytes());
+        hash.update(creator.as_ref());
+        hash.update(giveaway_id.to_le_bytes());
+        hash.update(payout_lamports.to_le_bytes());
+        hash.update(winners.to_le_bytes());
+        hash.update(active_start.to_le_bytes());
+        hash.update(active_deadline.to_le_bytes());
+        hash.update(upload_duration.to_le_bytes());
+        hash.update(creator_nonce.to_le_bytes());
+        hash.finalize().into()
+    }
+
     /// Size of Config account in bytes
     pub const SIZE: usize = 8 + // discriminator
         32 + // authority
@@ -104,5 +139,65 @@ impl Config {
     pub fn validate_durations(active_duration_secs: u32, upload_duration_secs: u32) -> bool {
         (MIN_ACTIVE_DURATION_SECS..=MAX_ACTIVE_DURATION_SECS).contains(&active_duration_secs)
             && (MIN_UPLOAD_DURATION_SECS..=MAX_UPLOAD_DURATION_SECS).contains(&upload_duration_secs)
+    }
+}
+
+#[cfg(test)]
+mod creation_hash_tests {
+    use super::*;
+
+    #[test]
+    fn creator_terms_and_mutable_provider_settings_change_digest() {
+        let program = Pubkey::new_unique();
+        let config_key = Pubkey::new_unique();
+        let creator = Pubkey::new_unique();
+        let mut config = Config {
+            authority: Pubkey::new_unique(),
+            service_fee_bps: 500,
+            default_active_duration_secs: 86_400,
+            default_upload_duration_secs: 86_400,
+            created_at_unix: 1,
+            last_updated_unix: 1,
+            next_giveaway_id: 1,
+            registry_program: Pubkey::new_unique(),
+            registry_config: Pubkey::new_unique(),
+        };
+        let digest = |settings: &Config, nonce| {
+            settings.creation_hash(
+                &program,
+                &config_key,
+                &creator,
+                1,
+                1_000_000,
+                2,
+                100,
+                200,
+                3_600,
+                nonce,
+            )
+        };
+        let expected = digest(&config, 7);
+        assert_eq!(expected, digest(&config, 7));
+        assert_ne!(expected, digest(&config, 8));
+        assert_ne!(
+            expected,
+            config.creation_hash(
+                &program,
+                &config_key,
+                &Pubkey::new_unique(),
+                1,
+                1_000_000,
+                2,
+                100,
+                200,
+                3_600,
+                7,
+            )
+        );
+        config.service_fee_bps = 600;
+        assert_ne!(expected, digest(&config, 7));
+        config.service_fee_bps = 500;
+        config.authority = Pubkey::new_unique();
+        assert_ne!(expected, digest(&config, 7));
     }
 }

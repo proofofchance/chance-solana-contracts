@@ -905,12 +905,12 @@
   },
   "sourceSha256": {
     "crates/registry-wire/src/lib.rs": "bd52bf9eadccc1fe6c3b70987cc74b4ab1dae0e4dbef1d58871b2b2bc392c839",
-    "programs/daily-lottery-v1/src/state/config.rs": "9c4edaae434759066da49e6919a6c953395255e42206a9d9923bdadf066bf11a",
+    "programs/daily-lottery-v1/src/state/config.rs": "7c858f9cd8e87c9a47c75a8df8125f3de3abba8dd89da3c84d7492553a9c7e8d",
     "programs/daily-lottery-v1/src/state/lottery.rs": "873c0033760bdbd61ddec7e5d111f3649195155f5e6043de11b6b86562cad27d",
     "programs/daily-lottery-v1/src/state/participant.rs": "2f054624c62a1da758298fcd00dc97517b430de4e4cb39c927fd43cff390bd1e",
     "programs/daily-lottery-v1/src/state/finalization_ledger.rs": "09654fba78b16a74b303c64280bbd808046383891005db14256505e9972ea5c1",
     "programs/daily-lottery-v1/src/state/vault.rs": "75fd7d28d4a041b4806ab6be46429a1d7c2a191c688f3128a5c9f515f78257d7",
-    "programs/giveaways-v1/src/state/config.rs": "ffde9407710738280781c35a872d24d83de4a7c1ca89ea1905c5f84a898ee0e3",
+    "programs/giveaways-v1/src/state/config.rs": "50fcfa3866e5597f93c2cd06a12a5a211cb66263dafea5949b3c3b1d94b3d342",
     "programs/giveaways-v1/src/state/giveaway.rs": "1a9b9c037f1eeb9c3b793c27c88d8954142c78b491a014e20624da39657cc811",
     "programs/giveaways-v1/src/state/participant.rs": "ab0c8c7ed4be6b3822695290a4388bcc12906e34faabe53e62533493e75d6097",
     "programs/giveaways-v1/src/state/winners_ledger.rs": "ce2f0af1a659a68a0b91437be6e865b3a4c81c250078894eaa987f2f2209f6b5"

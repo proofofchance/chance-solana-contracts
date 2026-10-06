@@ -89,6 +89,56 @@ pub fn process_with_nonce(
     upload_duration_secs: u32,
     creator_nonce: u64,
 ) -> Result<()> {
+    process_with_expected_hash(
+        ctx,
+        giveaway_id,
+        total_payout_lamports,
+        number_of_winners,
+        active_start_unix,
+        active_deadline_unix,
+        upload_duration_secs,
+        creator_nonce,
+        None,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn process_checked(
+    ctx: Context<CreateGiveaway>,
+    giveaway_id: u64,
+    total_payout_lamports: u64,
+    number_of_winners: u32,
+    active_start_unix: i64,
+    active_deadline_unix: i64,
+    upload_duration_secs: u32,
+    creator_nonce: u64,
+    expected_creation_hash: [u8; 32],
+) -> Result<()> {
+    process_with_expected_hash(
+        ctx,
+        giveaway_id,
+        total_payout_lamports,
+        number_of_winners,
+        active_start_unix,
+        active_deadline_unix,
+        upload_duration_secs,
+        creator_nonce,
+        Some(expected_creation_hash),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn process_with_expected_hash(
+    ctx: Context<CreateGiveaway>,
+    giveaway_id: u64,
+    total_payout_lamports: u64,
+    number_of_winners: u32,
+    active_start_unix: i64,
+    active_deadline_unix: i64,
+    upload_duration_secs: u32,
+    creator_nonce: u64,
+    expected_creation_hash: Option<[u8; 32]>,
+) -> Result<()> {
     let config = &ctx.accounts.config;
     let giveaway = &mut ctx.accounts.giveaway;
     let vault = &ctx.accounts.vault;
@@ -106,6 +156,25 @@ pub fn process_with_nonce(
         giveaway_id == config.next_giveaway_id,
         GiveawayError::InvalidGiveawayId
     );
+
+    if let Some(expected) = expected_creation_hash {
+        require!(
+            expected
+                == config.creation_hash(
+                    ctx.program_id,
+                    &config.key(),
+                    &creator.key(),
+                    giveaway_id,
+                    total_payout_lamports,
+                    number_of_winners,
+                    active_start_unix,
+                    active_deadline_unix,
+                    upload_duration_secs,
+                    creator_nonce,
+                ),
+            GiveawayError::CreationConfigMismatch
+        );
+    }
 
     // Validate parameters
     validate_winner_count(number_of_winners)?;

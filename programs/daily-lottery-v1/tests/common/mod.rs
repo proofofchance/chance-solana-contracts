@@ -238,8 +238,11 @@ impl TestContext {
             })
             .unwrap(),
         };
-        let budget = Instruction { program_id: solana_program::pubkey!("ComputeBudget111111111111111111111111111111"),
-            accounts: vec![], data: [vec![2], 1_400_000u32.to_le_bytes().to_vec()].concat() };
+        let budget = Instruction {
+            program_id: solana_program::pubkey!("ComputeBudget111111111111111111111111111111"),
+            accounts: vec![],
+            data: [vec![2], 1_400_000u32.to_le_bytes().to_vec()].concat(),
+        };
         self.send_tx(vec![budget, activation], &[]).unwrap();
     }
 
@@ -249,7 +252,7 @@ impl TestContext {
         let mut result = Vec::new();
         for mut ix in instructions.drain(..) {
             if ix.program_id != self.daily_program
-                || ix.data.first() != Some(&2)
+                || !matches!(ix.data.first(), Some(2 | 19 | 20))
                 || ix.accounts.len() != 5
             {
                 result.push(ix);
@@ -282,7 +285,12 @@ impl TestContext {
             let state: w::Config =
                 w::from_slice(&self.svm.get_account(&cfg).unwrap().data).unwrap();
             let index = (state.instance_count + 1).to_le_bytes();
-            let day = (self.get_clock().unix_timestamp as u64 / 86_400).to_le_bytes();
+            let start = if ix.data.first() == Some(&2) {
+                self.get_clock().unix_timestamp
+            } else {
+                i64::from_le_bytes(ix.data[1..9].try_into().unwrap())
+            };
+            let day = (start as u64 / 86_400).to_le_bytes();
             let key =
                 solana_sha256_hasher::hashv(&[b"chance-daily-key-v1", &[1; 32], &day]).to_bytes();
             ix.accounts.extend([
