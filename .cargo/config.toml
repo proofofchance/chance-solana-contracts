@@ -1,0 +1,4 @@
+# Shared artifact path expected by solana-verify 0.4.11 when mounting this repo.
+# Programs still resolve independently against their own Cargo.lock files.
+[build]
+target-dir = "target"

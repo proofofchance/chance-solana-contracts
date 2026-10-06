@@ -1,0 +1,31 @@
+name: Solana host tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        program: [daily-lottery-v1, giveaways-v1, registry]
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install 1.89.0 --profile minimal
+      - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
+      - run: cargo test --locked --lib --manifest-path programs/${{ matrix.program }}/Cargo.toml
+
+  consumer-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install 1.89.0 --profile minimal
+      - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
+      - run: python3 tools/export_schemas.py
+      - run: cargo run --locked --manifest-path tools/idl-export/Cargo.toml
+      - run: git diff --exit-code -- audit/schemas/
+      - run: python3 -m unittest discover -s audit/tests -v
