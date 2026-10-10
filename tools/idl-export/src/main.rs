@@ -7,11 +7,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // anchor-lang-idl 0.1.3 formats an inherited toolchain override literally.
     // The repository rust-toolchain.toml remains authoritative for child cargo.
     std::env::remove_var("RUSTUP_TOOLCHAIN");
+    let args: Vec<_> = std::env::args().skip(1).collect();
+    let devnet = args == ["--devnet-v1"];
+    if !args.is_empty() && !devnet {
+        return Err("expected no arguments or --devnet-v1".into());
+    }
+    let mut cargo_args = vec!["--locked".into(), "--lib".into()];
+    if devnet {
+        cargo_args.extend(["--features".into(), "devnet-v1".into()]);
+    }
     let idl = anchor_lang_idl::build::IdlBuilder::new()
         .program_path(root.join("programs/giveaways-v1"))
-        .cargo_args(vec!["--locked".into(), "--lib".into()])
+        .cargo_args(cargo_args)
         .build()?;
-    let output = root.join("audit/schemas/giveaways-v1.idl.json");
+    let output = root.join(if devnet {
+        "audit/schemas/giveaways-devnet-v1.idl.json"
+    } else {
+        "audit/schemas/giveaways-v1.idl.json"
+    });
     std::fs::write(output, serde_json::to_string_pretty(&idl)? + "\n")?;
     Ok(())
 }

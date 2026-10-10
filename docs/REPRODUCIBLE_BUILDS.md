@@ -22,4 +22,13 @@ Use `tools/build_manifest.py` only after independently building the selected pub
 
 The pinned `solana-verify` already supplies `--locked` to Cargo. Do not repeat it in forwarded arguments: Cargo rejects duplicate `--locked`. Exact-head checkout and clean-tree comparison remain required.
 
-Public CI includes a per-program source/ELF manifest with each build artifact. See [historical source continuity](HISTORICAL_SOURCE.md) for preserved commits and the limits of the rename check.
+## Fresh giveaway Devnet release
+
+The separate `Giveaway Devnet reproducible build` workflow forwards
+`--features devnet-v1` and compares two clean builds. Its artifact is
+`verified-giveaways-devnet-v1`; default runtime tests never merge it over the
+original `giveaways.so`. Record manifests with `--library giveaways --features
+devnet-v1`, and export the feature IDL with the IDL exporter argument
+`--devnet-v1`. It writes `audit/schemas/giveaways-devnet-v1.idl.json` independently
+of the default IDL. See [release selection](GIVEAWAY_RELEASE_SELECTION.md) for the
+public program/bootstrap addresses and permissionless creation rules.

@@ -22,7 +22,10 @@ def main():
     parser.add_argument('--library',required=True,choices=PROGRAMS)
     parser.add_argument('--elf',required=True,type=Path)
     parser.add_argument('--output',required=True,type=Path)
+    parser.add_argument('--features', choices=['devnet-v1'])
     args=parser.parse_args()
+    if args.features and args.library != 'giveaways':
+        parser.error('The release feature is qualified only for giveaways')
     if not re.fullmatch(r'https://github.com/proofofchance/[A-Za-z0-9_.-]+',args.repository):
         parser.error('Expected the public Proof of Chance repository URL')
     if not re.fullmatch(r'[0-9a-f]{40}',args.commit):
@@ -37,8 +40,8 @@ def main():
     program=PROGRAMS[args.library]
     lock=f'programs/{program}/Cargo.lock'
     source={'repository':args.repository,'commit':args.commit,'mountRoot':'.','manifest':f'programs/{program}/Cargo.toml',
-            'library':args.library,'features':[],'buildImage':IMAGE,'verifierVersion':'0.4.11',
-            'cargoArgs':['-Znext-lockfile-bump'],'verifierSuppliesLocked':True,'lockSha256':hashlib.sha256((ROOT/lock).read_bytes()).hexdigest()}
+            'library':args.library,'features':[args.features] if args.features else [],'buildImage':IMAGE,'verifierVersion':'0.4.11',
+            'cargoArgs':['-Znext-lockfile-bump'] + (['--features',args.features] if args.features else []),'verifierSuppliesLocked':True,'lockSha256':hashlib.sha256((ROOT/lock).read_bytes()).hexdigest()}
     manifest={'schema':1,'library':args.library,'source':source,
               'sourceReferenceSha256':hashlib.sha256(json.dumps(source,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
               'executableSha256':hashlib.sha256(args.elf.read_bytes().rstrip(b'\0')).hexdigest(),

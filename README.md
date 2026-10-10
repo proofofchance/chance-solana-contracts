@@ -2,6 +2,10 @@
 
 Public source and verification tools for the versioned Chance registry, daily lotteries and giveaways. Each event has its own account and vault; new releases govern future creation. Existing events retain their original rules, settlement and refund rights.
 
+Giveaway creation is permissionless through an active immutable release. New
+versions use new addresses; the future creation catalog can choose a default
+without changing existing instances. See [release selection](docs/GIVEAWAY_RELEASE_SELECTION.md).
+
 ## Independent build roots
 
 | Library | Manifest | Purpose |

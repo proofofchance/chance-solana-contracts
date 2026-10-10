@@ -17,10 +17,33 @@ pub struct Initialize<'info> {
     )]
     pub config: Account<'info, Config>,
 
-    #[account(mut)]
+    #[account(mut, constraint = initialization_authorized(authority.key()) @ crate::error::GiveawayError::Unauthorized)]
     pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,
+}
+
+fn initialization_authorized(authority: Pubkey) -> bool {
+    #[cfg(feature = "devnet-v1")]
+    {
+        authority == crate::INITIALIZATION_AUTHORITY
+    }
+    #[cfg(not(feature = "devnet-v1"))]
+    {
+        let _ = authority;
+        true
+    }
+}
+
+#[cfg(all(test, feature = "devnet-v1"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn release_bootstrap_authority_is_fixed_without_restricting_creators() {
+        assert!(initialization_authorized(crate::INITIALIZATION_AUTHORITY));
+        assert!(!initialization_authorized(Pubkey::new_unique()));
+    }
 }
 
 pub fn process(

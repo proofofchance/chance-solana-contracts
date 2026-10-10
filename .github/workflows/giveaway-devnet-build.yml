@@ -1,0 +1,50 @@
+name: Giveaway Devnet reproducible build
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+      BUILD_IMAGE: solanafoundation/solana-verifiable-build@sha256:ff3b148fb6adc3025c46ac38f132f473ccbdc4391f253234d98aa6519aec07f8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install pinned verifier
+        run: |
+          curl --fail --location --retry 3 https://github.com/solana-foundation/solana-verifiable-build/releases/download/v0.4.11/solana-verify-linux -o "$RUNNER_TEMP/solana-verify"
+          printf '%s  %s\n' '2b0cf244902cf9324396db05fa38ea14c5ace3e05e57739b06be4f6e6c10b437' "$RUNNER_TEMP/solana-verify" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/solana-verify"
+      - name: Reproduce the immutable Devnet release in two clean trees
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/second-build" HEAD
+          "$RUNNER_TEMP/solana-verify" build --library-name giveaways --base-image "$BUILD_IMAGE" "$GITHUB_WORKSPACE" -- -Znext-lockfile-bump --features devnet-v1
+          "$RUNNER_TEMP/solana-verify" build --library-name giveaways --base-image "$BUILD_IMAGE" "$RUNNER_TEMP/second-build" -- -Znext-lockfile-bump --features devnet-v1
+          cmp target/deploy/giveaways.so "$RUNNER_TEMP/second-build/target/deploy/giveaways.so"
+          "$RUNNER_TEMP/solana-verify" build --library-name chance_registry --base-image "$BUILD_IMAGE" "$GITHUB_WORKSPACE" -- -Znext-lockfile-bump
+          mkdir -p releases/ci
+          python3 tools/build_manifest.py --repository https://github.com/proofofchance/chance-solana-contracts --commit "$(git rev-parse HEAD)" --library giveaways --features devnet-v1 --elf target/deploy/giveaways.so --output releases/ci/giveaways.manifest.json
+          git rev-parse HEAD > releases/ci/commit.txt
+          printf '%s\n' "$BUILD_IMAGE" > releases/ci/build-image.txt
+      - run: rustup toolchain install 1.89.0 --profile minimal
+      - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
+      - name: Test the release and verify its generated interface
+        run: |
+          cargo test --locked --lib --manifest-path programs/giveaways-v1/Cargo.toml --features devnet-v1
+          CHANCE_GIVEAWAY_DEVNET_ELF="$PWD/target/deploy/giveaways.so" cargo test --locked --manifest-path programs/registry/Cargo.toml --test giveaway_devnet -- --ignored
+          cargo run --locked --manifest-path tools/idl-export/Cargo.toml -- --devnet-v1
+          git diff --exit-code -- audit/schemas/giveaways-devnet-v1.idl.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-giveaways-devnet-v1
+          path: |
+            target/deploy/giveaways.so
+            releases/ci/
+            audit/schemas/giveaways-devnet-v1.idl.json

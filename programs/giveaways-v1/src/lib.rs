@@ -70,7 +70,16 @@ use instructions::{
     update_service_charge::*, upload_reveals::*,
 };
 
+#[cfg(not(feature = "devnet-v1"))]
 declare_id!("DUMRJ15A2ivmUNDK6EX7wfRQ1cYw4vw5ewSyT8xSJuRG");
+#[cfg(feature = "devnet-v1")]
+declare_id!("FQxfsBE7fXuBbcxERsgRwi1AHsbSMdU7nWwhGz8ZRLUY");
+
+/// A release-specific bootstrap signer prevents configuration squatting between
+/// immutable deployment and initialization. This does not restrict creators.
+#[cfg(feature = "devnet-v1")]
+pub const INITIALIZATION_AUTHORITY: Pubkey =
+    solana_program::pubkey!("HMroJo6qBsFiodxFJeqU8VDBLif5P5kDFWmEFpibaKCQ");
 
 #[program]
 pub mod giveaways {

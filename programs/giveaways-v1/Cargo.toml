@@ -11,6 +11,7 @@ crate-type = ["cdylib", "lib"]
 name = "giveaways"
 
 [features]
+devnet-v1 = []
 allow-early-upload = []
 no-entrypoint = []
 no-idl = []
