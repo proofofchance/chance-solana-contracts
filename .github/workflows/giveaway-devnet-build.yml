@@ -36,6 +36,8 @@ jobs:
       - run: rustup toolchain install 1.89.0 --profile minimal
       - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
       - name: Test the release and verify its generated interface
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/giveaway-host-tests
         run: |
           cargo test --locked --lib --manifest-path programs/giveaways-v1/Cargo.toml --features devnet-v1
           CHANCE_GIVEAWAY_DEVNET_ELF="$PWD/target/deploy/giveaways.so" cargo test --locked --manifest-path programs/registry/Cargo.toml --test giveaway_devnet -- --ignored
