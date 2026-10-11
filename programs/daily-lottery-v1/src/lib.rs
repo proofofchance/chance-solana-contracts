@@ -66,6 +66,9 @@ use solana_program::{
     account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, pubkey::Pubkey,
 };
 
+#[cfg(feature = "staging-afresh-v1")]
+include!(concat!(env!("OUT_DIR"), "/staging_afresh.rs"));
+
 // Program entry point
 entrypoint!(process_instruction);
 
@@ -88,5 +91,22 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
+    #[cfg(feature = "staging-afresh-v1")]
+    if *program_id != STAGING_PROGRAM_ID {
+        return Err(Error::Unauthorized.into());
+    }
     instructions::process_instruction(program_id, accounts, instruction_data)
+}
+
+#[cfg(all(test, feature = "staging-afresh-v1"))]
+mod staging_tests {
+    use super::*;
+
+    #[test]
+    fn fresh_binary_rejects_a_different_deployment_address() {
+        assert_eq!(
+            process_instruction(&Pubkey::new_unique(), &[], &[]),
+            Err(Error::Unauthorized.into())
+        );
+    }
 }

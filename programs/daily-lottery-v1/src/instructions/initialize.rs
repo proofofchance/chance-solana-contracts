@@ -52,6 +52,10 @@ pub fn process(
     if !authority_ai.is_signer {
         return Err(Error::Unauthorized.into());
     }
+    #[cfg(feature = "staging-afresh-v1")]
+    if *authority_ai.key != crate::INITIALIZATION_AUTHORITY {
+        return Err(Error::Unauthorized.into());
+    }
     require_key_match(system_program_ai, &system_program::id())?;
 
     // Validate service charge rate
@@ -140,5 +144,55 @@ mod tests {
         // Invalid service charges
         assert!(!Config::validate_service_charge(10000)); // 100%
         assert!(!Config::validate_service_charge(15000)); // 150%
+    }
+
+    #[cfg(feature = "staging-afresh-v1")]
+    #[test]
+    fn fresh_bootstrap_rejects_another_signer_before_config_creation() {
+        let attacker = Pubkey::new_unique();
+        let (config_key, _) =
+            Pubkey::find_program_address(&[b"config"], &crate::STAGING_PROGRAM_ID);
+        let system = system_program::id();
+        let mut payer_lamports = 1;
+        let mut config_lamports = 0;
+        let mut system_lamports = 0;
+        let mut payer_data = [];
+        let mut config_data = [];
+        let mut system_data = [];
+        let accounts = [
+            AccountInfo::new(
+                &attacker,
+                true,
+                true,
+                &mut payer_lamports,
+                &mut payer_data,
+                &system,
+                false,
+            ),
+            AccountInfo::new(
+                &config_key,
+                false,
+                true,
+                &mut config_lamports,
+                &mut config_data,
+                &system,
+                false,
+            ),
+            AccountInfo::new(
+                &system,
+                false,
+                false,
+                &mut system_lamports,
+                &mut system_data,
+                &system,
+                true,
+            ),
+        ];
+        assert_eq!(
+            process(&crate::STAGING_PROGRAM_ID, &accounts, 1_000_000, 500, 256),
+            Err(Error::Unauthorized.into())
+        );
+        assert!(accounts[1].data_is_empty());
+        assert_eq!(accounts[1].lamports(), 0);
     }
 }

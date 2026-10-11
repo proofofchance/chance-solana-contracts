@@ -9,6 +9,7 @@ crate-type = ["cdylib", "lib"]
 name = "chance_registry"
 
 [features]
+staging-afresh-v1 = []
 allow-early-upload = []
 allow-service-charge-update = []
 no-entrypoint = []

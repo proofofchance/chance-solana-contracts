@@ -15,8 +15,75 @@ use solana_program::{
 use solana_sha256_hasher::hashv;
 use solana_system_interface::{instruction as system_instruction, program as system_program};
 
+#[cfg(feature = "staging-afresh-v1")]
+include!(concat!(env!("OUT_DIR"), "/staging_afresh.rs"));
+
 #[cfg(not(feature = "no-entrypoint"))]
 solana_program::entrypoint!(process_instruction);
+
+#[cfg(all(test, feature = "staging-afresh-v1"))]
+mod staging_tests {
+    use super::*;
+
+    #[test]
+    fn fresh_binary_rejects_a_different_deployment_address() {
+        assert_eq!(
+            process_instruction(&Pubkey::new_unique(), &[], &[]),
+            Err(Error::Invalid.into())
+        );
+    }
+
+    #[test]
+    fn fresh_registry_rejects_a_different_initialization_signer() {
+        let authority = Pubkey::new_unique();
+        let system = system_program::id();
+        let config = Pubkey::new_unique();
+        let mut balances = [0, 1, 0];
+        let [config_balance, authority_balance, system_balance] = &mut balances;
+        let mut config_data = [];
+        let mut authority_data = [];
+        let mut system_data = [];
+        let accounts = [
+            AccountInfo::new(
+                &config,
+                false,
+                true,
+                config_balance,
+                &mut config_data,
+                &system,
+                false,
+            ),
+            AccountInfo::new(
+                &authority,
+                true,
+                true,
+                authority_balance,
+                &mut authority_data,
+                &system,
+                false,
+            ),
+            AccountInfo::new(
+                &system,
+                false,
+                false,
+                system_balance,
+                &mut system_data,
+                &system,
+                true,
+            ),
+        ];
+        let instruction = wire::to_vec(&wire::Instruction::Initialize {
+            guardian: [1; 32],
+            activation_delay: 1,
+        })
+        .unwrap();
+        assert_eq!(
+            process_instruction(&STAGING_PROGRAM_ID, &accounts, &instruction),
+            Err(Error::Unauthorized.into())
+        );
+        assert!(accounts[0].data_is_empty());
+    }
+}
 
 #[repr(u32)]
 #[derive(Clone, Copy, Debug)]
@@ -177,6 +244,8 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     bytes: &[u8],
 ) -> ProgramResult {
+    #[cfg(feature = "staging-afresh-v1")]
+    require(*program_id == STAGING_PROGRAM_ID, Error::Invalid)?;
     let instruction: wire::Instruction = wire::from_slice(bytes).map_err(|_| Error::Invalid)?;
     let iter = &mut accounts.iter();
     let cfg_ai = next_account_info(iter)?;
@@ -187,6 +256,11 @@ pub fn process_instruction(
     {
         let authority = next_account_info(iter)?;
         let system = next_account_info(iter)?;
+        #[cfg(feature = "staging-afresh-v1")]
+        require(
+            *authority.key == INITIALIZATION_AUTHORITY,
+            Error::Unauthorized,
+        )?;
         require(guardian != [0; 32] && activation_delay > 0, Error::Invalid)?;
         return create(
             program_id,

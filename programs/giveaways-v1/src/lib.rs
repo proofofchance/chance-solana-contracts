@@ -70,7 +70,7 @@ use instructions::{
     update_service_charge::*, upload_reveals::*,
 };
 
-#[cfg(not(feature = "devnet-v1"))]
+#[cfg(not(any(feature = "devnet-v1", feature = "staging-afresh-v1")))]
 declare_id!("DUMRJ15A2ivmUNDK6EX7wfRQ1cYw4vw5ewSyT8xSJuRG");
 #[cfg(feature = "devnet-v1")]
 declare_id!("FQxfsBE7fXuBbcxERsgRwi1AHsbSMdU7nWwhGz8ZRLUY");
@@ -80,6 +80,9 @@ declare_id!("FQxfsBE7fXuBbcxERsgRwi1AHsbSMdU7nWwhGz8ZRLUY");
 #[cfg(feature = "devnet-v1")]
 pub const INITIALIZATION_AUTHORITY: Pubkey =
     solana_program::pubkey!("HMroJo6qBsFiodxFJeqU8VDBLif5P5kDFWmEFpibaKCQ");
+
+#[cfg(feature = "staging-afresh-v1")]
+include!(concat!(env!("OUT_DIR"), "/staging_afresh.rs"));
 
 #[program]
 pub mod giveaways {

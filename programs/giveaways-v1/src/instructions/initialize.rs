@@ -24,18 +24,18 @@ pub struct Initialize<'info> {
 }
 
 fn initialization_authorized(authority: Pubkey) -> bool {
-    #[cfg(feature = "devnet-v1")]
+    #[cfg(any(feature = "devnet-v1", feature = "staging-afresh-v1"))]
     {
         authority == crate::INITIALIZATION_AUTHORITY
     }
-    #[cfg(not(feature = "devnet-v1"))]
+    #[cfg(not(any(feature = "devnet-v1", feature = "staging-afresh-v1")))]
     {
         let _ = authority;
         true
     }
 }
 
-#[cfg(all(test, feature = "devnet-v1"))]
+#[cfg(all(test, any(feature = "devnet-v1", feature = "staging-afresh-v1")))]
 mod tests {
     use super::*;
 
@@ -43,6 +43,12 @@ mod tests {
     fn release_bootstrap_authority_is_fixed_without_restricting_creators() {
         assert!(initialization_authorized(crate::INITIALIZATION_AUTHORITY));
         assert!(!initialization_authorized(Pubkey::new_unique()));
+    }
+
+    #[cfg(feature = "staging-afresh-v1")]
+    #[test]
+    fn fresh_idl_and_anchor_entrypoint_share_the_compiled_identity() {
+        assert_eq!(crate::id(), crate::STAGING_PROGRAM_ID);
     }
 }
 

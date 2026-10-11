@@ -9,6 +9,7 @@ crate-type = ["cdylib", "lib"]
 name = "daily_lottery"
 
 [features]
+staging-afresh-v1 = []
 allow-early-upload = []
 allow-service-charge-update = []
 no-entrypoint = []
