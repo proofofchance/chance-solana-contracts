@@ -58,13 +58,19 @@ jobs:
           sha256sum target/deploy/daily_lottery.so > releases/ci/control-elf.sha256
       - name: Execute real SBF capability and lifecycle tests
         env:
+          # The verifier container owns target/. Keep native test output separate.
+          CARGO_TARGET_DIR: ${{ runner.temp }}/daily-control-host-tests
           SBF_OUT_DIR: ${{ github.workspace }}/target/deploy
         run: cargo test --locked --manifest-path programs/daily-lottery-v1/Cargo.toml --features "$CONTROL_FEATURES" --test test_controls
       - name: Exercise host invariants and randomized transition model
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/daily-control-host-tests
         run: cargo test --locked --lib --manifest-path programs/daily-lottery-v1/Cargo.toml --features "$CONTROL_FEATURES"
       - name: Run complete production lifecycle independently
         if: matrix.flavor == 'production'
         env:
+          # The verifier container owns target/. Keep native test output separate.
+          CARGO_TARGET_DIR: ${{ runner.temp }}/daily-control-host-tests
           SBF_OUT_DIR: ${{ github.workspace }}/target/deploy
         run: cargo test --locked --manifest-path programs/daily-lottery-v1/Cargo.toml --features production-release
       - uses: actions/upload-artifact@v4
