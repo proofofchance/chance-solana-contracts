@@ -52,6 +52,12 @@ pub fn process(
     if !authority_ai.is_signer {
         return Err(Error::Unauthorized.into());
     }
+    #[cfg(feature = "local-test-controls")]
+    if *program_id != crate::TEST_CONTROL_PROGRAM_ID
+        || *authority_ai.key != crate::TEST_CONTROL_AUTHORITY
+    {
+        return Err(Error::Unauthorized.into());
+    }
     #[cfg(feature = "staging-afresh-v1")]
     if *authority_ai.key != crate::INITIALIZATION_AUTHORITY {
         return Err(Error::Unauthorized.into());

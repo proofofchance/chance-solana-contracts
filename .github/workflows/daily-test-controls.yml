@@ -1,0 +1,75 @@
+name: Daily lottery testing controls
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  feature-policy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install 1.89.0 --profile minimal
+      - run: python3 -m unittest discover -s tools -p 'test_non_production_controls.py' -v
+  runtime:
+    needs: feature-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - flavor: production
+            features: production-release
+          - flavor: local
+            features: local-test-controls,allow-early-upload
+          - flavor: staging
+            features: staging-afresh-v1,staging-test-controls,allow-early-upload
+    env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+      BUILD_IMAGE: solanafoundation/solana-verifiable-build@sha256:ff3b148fb6adc3025c46ac38f132f473ccbdc4391f253234d98aa6519aec07f8
+      CONTROL_FEATURES: ${{ matrix.features }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - run: rustup toolchain install 1.89.0 --profile minimal
+      - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
+      - name: Install pinned verifier
+        run: |
+          curl --fail --location --retry 3 https://github.com/solana-foundation/solana-verifiable-build/releases/download/v0.4.11/solana-verify-linux -o "$RUNNER_TEMP/solana-verify"
+          printf '%s  %s\n' '2b0cf244902cf9324396db05fa38ea14c5ace3e05e57739b06be4f6e6c10b437' "$RUNNER_TEMP/solana-verify" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/solana-verify"
+      - name: Reproduce exact flavor in two independent trees
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/second-build" HEAD
+          python3 tools/test_non_production_controls.py --write-fixtures
+          python3 "$RUNNER_TEMP/second-build/tools/test_non_production_controls.py" --write-fixtures
+          "$RUNNER_TEMP/solana-verify" build --library-name daily_lottery --base-image "$BUILD_IMAGE" "$GITHUB_WORKSPACE" -- -Znext-lockfile-bump --features "$CONTROL_FEATURES"
+          "$RUNNER_TEMP/solana-verify" build --library-name daily_lottery --base-image "$BUILD_IMAGE" "$RUNNER_TEMP/second-build" -- -Znext-lockfile-bump --features "$CONTROL_FEATURES"
+          cmp target/deploy/daily_lottery.so "$RUNNER_TEMP/second-build/target/deploy/daily_lottery.so"
+          "$RUNNER_TEMP/solana-verify" build --library-name chance_registry --base-image "$BUILD_IMAGE" "$GITHUB_WORKSPACE" -- -Znext-lockfile-bump
+          mkdir -p releases/ci
+          git rev-parse HEAD > releases/ci/control-source.txt
+          printf '%s\n' "$CONTROL_FEATURES" > releases/ci/control-features.txt
+          printf '%s\n' "$BUILD_IMAGE" > releases/ci/control-build-image.txt
+          sha256sum target/deploy/daily_lottery.so > releases/ci/control-elf.sha256
+      - name: Execute real SBF capability and lifecycle tests
+        env:
+          SBF_OUT_DIR: ${{ github.workspace }}/target/deploy
+        run: cargo test --locked --manifest-path programs/daily-lottery-v1/Cargo.toml --features "$CONTROL_FEATURES" --test test_controls
+      - name: Exercise host invariants and randomized transition model
+        run: cargo test --locked --lib --manifest-path programs/daily-lottery-v1/Cargo.toml --features "$CONTROL_FEATURES"
+      - name: Run complete production lifecycle independently
+        if: matrix.flavor == 'production'
+        env:
+          SBF_OUT_DIR: ${{ github.workspace }}/target/deploy
+        run: cargo test --locked --manifest-path programs/daily-lottery-v1/Cargo.toml --features production-release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qualification-only-daily-${{ matrix.flavor }}
+          path: |
+            target/deploy/daily_lottery.so
+            releases/ci/control-*

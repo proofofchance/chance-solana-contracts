@@ -195,10 +195,7 @@ pub enum Instruction {
     /// 2. `[signer]` Authority
     // Adjust* instructions removed in favor of chain-clocked BeginRevealNow
 
-    ///    Begin or extend reveal windows using chain clock and durations
-    ///
-    /// Authority-only. Uses Clock::get() on-chain. Optional durations override
-    /// config defaults. Never shortens existing windows; only starts or extends.
+    /// Retired timing editor. Always rejects, including testing artifacts.
     BeginRevealNow {
         /// Optional attestation window length in seconds; use config default when None/0
         attestation_secs: u32,
@@ -226,13 +223,16 @@ pub enum Instruction {
     /// Begin the reveal phase immediately (testing-only convenience)
     ///
     /// Authority-only. Sets the reveal window to start now and end after the
-    /// standard duration. Only available in builds with `allow-early-upload`.
-    /// Fails if lottery is settled or already within the reveal window.
+    /// frozen duration. Requires `allow-early-upload` and one explicit testing scope.
+    /// Scheduled, expired, already-uploading and terminal rounds reject.
     ///
     /// Accounts expected:
     /// 0. `[]` Config account
     /// 1. `[writable]` Lottery account
-    /// 2. `[signer]` Authority
+    /// 2. `[signer]` Original lottery authority
+    /// 3. `[]` Bound registry executable
+    /// 4. `[]` Bound registry config
+    /// 5. `[]` Original daily release
     BeginRevealPhase,
 
     /// Finalize lottery when no attestations were submitted
@@ -332,6 +332,8 @@ pub enum Instruction {
         buy_start_unix: i64,
         expected_preset_hash: [u8; 32],
     },
+    /// Tag 21: read-only capability facts. No accounts or parameters.
+    GetBuildCapabilities,
 }
 
 /// Instruction processing dispatcher
@@ -354,6 +356,12 @@ pub fn process_instruction(
 
     // Manual tag dispatch for stability - no enum deserialization
     match tag {
+        21 if instruction_data.len() == 1 && accounts.is_empty() => {
+            solana_program::program::set_return_data(&crate::build_capabilities::encode(
+                program_id,
+            ));
+            Ok(())
+        }
         20 if instruction_data.len() == 41 => {
             let start = i64::from_le_bytes(
                 instruction_data[1..9]
@@ -488,23 +496,11 @@ pub fn process_instruction(
         }
 
         TAG_BEGIN_REVEAL_NOW => {
-            // Layout: [tag u8][attestation_secs u32][upload_secs u32]
-            if instruction_data.len() < 1 + 4 + 4 {
+            // Never restore arbitrary timing overrides in any build flavor.
+            if instruction_data.len() < 9 {
                 return Err(crate::error::Error::InvalidInstruction.into());
             }
-            let attestation_secs = u32::from_le_bytes([
-                instruction_data[1],
-                instruction_data[2],
-                instruction_data[3],
-                instruction_data[4],
-            ]);
-            let upload_secs = u32::from_le_bytes([
-                instruction_data[5],
-                instruction_data[6],
-                instruction_data[7],
-                instruction_data[8],
-            ]);
-            process_begin_reveal_phase(program_id, accounts, attestation_secs, upload_secs)
+            Err(crate::error::Error::InvalidPhaseTransition.into())
         }
 
         TAG_FINALIZE_WINNERS => {
@@ -544,8 +540,10 @@ pub fn process_instruction(
         }
 
         TAG_BEGIN_REVEAL_PHASE => {
-            // Layout: [tag u8]
-            process_begin_reveal_phase(program_id, accounts, 0u32, 0u32)
+            if instruction_data.len() != 1 {
+                return Err(crate::error::Error::InvalidInstruction.into());
+            }
+            process_begin_reveal_phase(program_id, accounts)
         }
 
         TAG_FINALIZE_NO_ATTESTERS => {

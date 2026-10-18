@@ -9,3 +9,5 @@ node_modules/
 
 __pycache__/
 *.pyc
+
+/releases/local-test-controls-v1.inputs

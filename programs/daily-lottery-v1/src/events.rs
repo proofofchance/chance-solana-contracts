@@ -371,6 +371,24 @@ pub enum LotteryEvent {
         winners: Vec<String>,
         timestamp: i64,
     },
+    /// Testing-only effective timing change. Production event layouts are unchanged.
+    #[cfg(feature = "allow-early-upload")]
+    TestUploadPhaseBegan {
+        capability: String,
+        lottery_id: u64,
+        lottery: String,
+        config: String,
+        authority: String,
+        old_buy_deadline: i64,
+        old_upload_start: i64,
+        old_upload_deadline: i64,
+        old_settlement_deadline: i64,
+        new_buy_deadline: i64,
+        new_upload_start: i64,
+        new_upload_deadline: i64,
+        new_settlement_deadline: i64,
+        timestamp: i64,
+    },
 }
 
 impl LotteryEvent {
@@ -397,6 +415,8 @@ impl LotteryEvent {
             LotteryEvent::LotteryCreated { lottery_id, .. } => Some(*lottery_id),
             LotteryEvent::TicketsPurchased { lottery_id, .. } => Some(*lottery_id),
             LotteryEvent::BuyPhaseBegan { lottery_id, .. } => Some(*lottery_id),
+            #[cfg(feature = "allow-early-upload")]
+            LotteryEvent::TestUploadPhaseBegan { lottery_id, .. } => Some(*lottery_id),
             LotteryEvent::AttestationSubmitted { lottery_id, .. } => Some(*lottery_id),
             LotteryEvent::RevealsUploaded { lottery_id, .. } => Some(*lottery_id),
             LotteryEvent::RevealRemediationBegan { lottery_id, .. } => Some(*lottery_id),
@@ -435,6 +455,8 @@ impl LotteryEvent {
             } => *created_at_unix,
             LotteryEvent::TicketsPurchased { timestamp, .. } => *timestamp,
             LotteryEvent::BuyPhaseBegan { timestamp, .. } => *timestamp,
+            #[cfg(feature = "allow-early-upload")]
+            LotteryEvent::TestUploadPhaseBegan { timestamp, .. } => *timestamp,
             LotteryEvent::AttestationSubmitted { timestamp, .. } => *timestamp,
             LotteryEvent::RevealsUploaded { timestamp, .. } => *timestamp,
             LotteryEvent::RevealRemediationBegan { timestamp, .. } => *timestamp,

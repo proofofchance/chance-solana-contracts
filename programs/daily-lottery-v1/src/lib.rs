@@ -55,10 +55,12 @@ pub use instructions::Instruction;
 pub use state::{Config, Lottery, Participant, Vault};
 
 // Internal modules
+pub mod build_capabilities;
 pub mod error;
 pub mod events;
 pub mod instructions;
 pub mod state;
+mod test_control_policy;
 pub mod utils;
 
 // Solana program imports
@@ -68,6 +70,9 @@ use solana_program::{
 
 #[cfg(feature = "staging-afresh-v1")]
 include!(concat!(env!("OUT_DIR"), "/staging_afresh.rs"));
+
+#[cfg(any(feature = "local-test-controls", feature = "staging-test-controls"))]
+include!(concat!(env!("OUT_DIR"), "/test_controls.rs"));
 
 // Program entry point
 entrypoint!(process_instruction);

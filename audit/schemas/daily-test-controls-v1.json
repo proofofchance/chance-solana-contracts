@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "contractVersion": 1,
+  "accountLayoutVersion": 2,
+  "capability": "begin-upload-v1",
+  "oneShotMarker": {"field": "Lottery.reserved[0]", "mask": 1, "testingFlavorsOnly": true},
+  "capabilityQuery": {
+    "tag": 21,
+    "instructionBytes": 1,
+    "accounts": [],
+    "returnBytes": 110,
+    "magic": "CHCTL001",
+    "encoding": "little-endian",
+    "fields": ["magic[8]", "schema:u16", "contractVersion:u16", "scope:u8", "capabilities:u8", "program:pubkey", "registry:pubkey", "authority:pubkey"],
+    "scopes": {"productionOrDefault": 0, "local": 1, "staging": 2},
+    "beginUploadBit": 1,
+    "serviceChargeUpdateBit": 2
+  },
+  "beginUpload": {
+    "tag": 8,
+    "instructionBytes": 1,
+    "accounts": ["config:readonly", "lottery:writable", "originalAuthority:signer", "registryProgram:readonly", "registryConfig:readonly", "originalRelease:readonly"],
+    "parameters": [],
+    "production": "always-reject",
+    "event": "TestUploadPhaseBegan"
+  },
+  "retiredDurationEditor": {"tag": 6, "allFlavors": "always-reject"},
+  "features": {
+    "production": ["production-release"],
+    "local": ["local-test-controls", "allow-early-upload"],
+    "staging": ["staging-afresh-v1", "staging-test-controls", "allow-early-upload"]
+  }
+}

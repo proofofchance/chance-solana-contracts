@@ -33,7 +33,7 @@ pub fn bind(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
     config.registry_config = *registry_config.key;
     write_account_data(config_ai, "Config", &config)
 }
-fn validate_registry(
+pub(super) fn validate_registry(
     program_id: &Pubkey,
     registry_program: &AccountInfo,
     cfg: &AccountInfo,

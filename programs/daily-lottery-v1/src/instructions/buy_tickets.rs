@@ -91,6 +91,10 @@ pub fn process(
     // Verify we are within the buy window and lottery is active
     let clock = Clock::get()?;
     let current_time = clock.unix_timestamp;
+    #[cfg(feature = "allow-early-upload")]
+    if lottery.reserved[0] & 1 != 0 {
+        return Err(Error::OutsideTimeWindow.into());
+    }
     let upload_started = lottery.upload_start_unix > 0 && current_time >= lottery.upload_start_unix;
     if upload_started {
         return Err(Error::OutsideTimeWindow.into());

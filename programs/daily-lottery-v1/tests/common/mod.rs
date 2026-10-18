@@ -31,6 +31,14 @@ pub struct TestContext {
 #[allow(dead_code)]
 impl TestContext {
     pub fn new(program_id: Pubkey, extra_funded_accounts: &[&Keypair]) -> Self {
+        Self::new_with_registry(program_id, Pubkey::new_unique(), extra_funded_accounts)
+    }
+
+    pub fn new_with_registry(
+        program_id: Pubkey,
+        registry: Pubkey,
+        extra_funded_accounts: &[&Keypair],
+    ) -> Self {
         let mut svm = LiteSVM::new();
         svm.add_program_from_file(program_id, program_binary_path("daily_lottery"))
             .expect("failed to load daily_lottery SBF artifact");
@@ -54,7 +62,7 @@ impl TestContext {
         let mut context = Self {
             svm,
             payer,
-            registry: Pubkey::new_unique(),
+            registry,
             daily_program: program_id,
         };
         context.setup_registry(program_id);
