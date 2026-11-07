@@ -7,9 +7,7 @@ use crate::{
     constants::*,
     error::GiveawayError,
     state::{Config, Giveaway, Participant},
-    utils::crypto::{
-        build_reveal_plaintext, compute_reveal_digest, verify_reveal, xor_reveal_digests,
-    },
+    utils::crypto::{compute_reveal_digest, verify_reveal, xor_reveal_digests},
 };
 use anchor_lang::prelude::*;
 
@@ -64,8 +62,7 @@ pub fn process(ctx: Context<AttestReveal>, lucky_words: String, salt: Vec<u8>) -
         GiveawayError::InvalidReveal
     );
 
-    let plaintext = build_reveal_plaintext(&lucky_words, &salt)?;
-    let reveal_digest = compute_reveal_digest(&participant.key(), &plaintext);
+    let reveal_digest = compute_reveal_digest(&participant.key(), &lucky_words);
     let aggregate_hash = xor_reveal_digests(giveaway.poc_aggregate_hash, &[reveal_digest]);
 
     if !participant_account.attested_uploaded {
@@ -92,6 +89,7 @@ pub fn process(ctx: Context<AttestReveal>, lucky_words: String, salt: Vec<u8>) -
         total_reveals_uploaded: giveaway.provider_uploaded_count,
         total_attested: giveaway.attested_count,
         aggregate_hash: hex::encode(aggregate_hash),
+        rule_version: GIVEAWAY_LUCKY_PHRASE_RULE_V1.to_string(),
         uploads_complete: giveaway.uploads_complete,
         timestamp: clock.unix_timestamp,
     }

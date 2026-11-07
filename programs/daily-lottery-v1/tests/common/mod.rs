@@ -21,6 +21,14 @@ const DEFAULT_AIRDROP_LAMPORTS: u64 = 10_000_000_000;
 #[allow(dead_code)]
 const APPROX_SECONDS_PER_SLOT_DIVISOR: u64 = 2;
 
+pub fn max_compute_budget() -> Instruction {
+    Instruction {
+        program_id: solana_program::pubkey!("ComputeBudget111111111111111111111111111111"),
+        accounts: vec![],
+        data: [vec![2], 1_400_000u32.to_le_bytes().to_vec()].concat(),
+    }
+}
+
 pub struct TestContext {
     pub svm: LiteSVM,
     pub payer: Keypair,
@@ -246,12 +254,8 @@ impl TestContext {
             })
             .unwrap(),
         };
-        let budget = Instruction {
-            program_id: solana_program::pubkey!("ComputeBudget111111111111111111111111111111"),
-            accounts: vec![],
-            data: [vec![2], 1_400_000u32.to_le_bytes().to_vec()].concat(),
-        };
-        self.send_tx(vec![budget, activation], &[]).unwrap();
+        self.send_tx(vec![max_compute_budget(), activation], &[])
+            .unwrap();
     }
 
     fn prepare_creation(&self, mut instructions: Vec<Instruction>) -> Vec<Instruction> {

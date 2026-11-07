@@ -69,6 +69,8 @@ pub enum GiveawayEvent {
         total_reveals_uploaded: u64,
         total_attested: u64,
         aggregate_hash: String,
+        #[serde(default)]
+        rule_version: String,
         uploads_complete: bool,
         timestamp: i64,
     },

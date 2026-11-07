@@ -1,6 +1,7 @@
 #![allow(clippy::result_large_err)]
 use chance_registry_wire as wire;
 use litesvm::LiteSVM;
+use sha2::{Digest, Sha256};
 use solana_clock::Clock;
 use solana_instruction::{AccountMeta as M, Instruction};
 use solana_keypair::Keypair;
@@ -8,7 +9,14 @@ use solana_program::pubkey::Pubkey;
 use solana_signer::Signer;
 use solana_system_interface::program as system;
 use solana_transaction::Transaction;
-use sha2::{Digest, Sha256};
+use std::path::PathBuf;
+
+fn program_artifact(filename: &str) -> PathBuf {
+    let directory = std::env::var_os("SBF_OUT_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy"));
+    directory.join(filename)
+}
 
 struct Fixture {
     svm: LiteSVM,
@@ -25,14 +33,8 @@ impl Fixture {
         let guardian = Keypair::new();
         let cfg = Pubkey::find_program_address(&[b"registry", admin.pubkey().as_ref()], &program).0;
         let mut svm = LiteSVM::new();
-        svm.add_program_from_file(
-            program,
-            concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/../../target/deploy/chance_registry.so"
-            ),
-        )
-        .unwrap();
+        svm.add_program_from_file(program, program_artifact("chance_registry.so"))
+            .unwrap();
         svm.airdrop(&admin.pubkey(), 10_000_000_000).unwrap();
         svm.airdrop(&guardian.pubkey(), 10_000_000_000).unwrap();
         let mut f = Self {
@@ -287,13 +289,7 @@ fn delayed_activation_terminal_discontinuation_and_append_only_successor_history
         .is_err());
     let next_program = Pubkey::new_unique();
     f.svm
-        .add_program_from_file(
-            next_program,
-            concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/../../target/deploy/chance_registry.so"
-            ),
-        )
+        .add_program_from_file(next_program, program_artifact("chance_registry.so"))
         .unwrap();
     let next = f.register(next_program);
     f.lifecycle(
@@ -509,13 +505,7 @@ fn actual_daily_programs_share_uniqueness_and_survive_discontinuation() {
     let b = Pubkey::new_unique();
     for program in [a, b] {
         f.svm
-            .add_program_from_file(
-                program,
-                concat!(
-                    env!("CARGO_MANIFEST_DIR"),
-                    "/../../target/deploy/daily_lottery.so"
-                ),
-            )
+            .add_program_from_file(program, program_artifact("daily_lottery.so"))
             .unwrap();
     }
     let ra = f.register(a);
@@ -682,10 +672,7 @@ fn checked_giveaway_creation_rejects_stale_terms_before_funding_or_registry_reco
     let mut f = Fixture::new();
     let program = solana_program::pubkey!("DUMRJ15A2ivmUNDK6EX7wfRQ1cYw4vw5ewSyT8xSJuRG");
     f.svm
-        .add_program_from_file(
-            program,
-            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/deploy/giveaways.so"),
-        )
+        .add_program_from_file(program, program_artifact("giveaways.so"))
         .unwrap();
     let rel = f.register_domain(program, wire::GIVEAWAY);
     let cfg = Pubkey::find_program_address(&[b"config"], &program).0;
@@ -767,13 +754,7 @@ fn giveaway_recovery_scenario(mode: u8) {
     let mut f = Fixture::new();
     let program = solana_program::pubkey!("DUMRJ15A2ivmUNDK6EX7wfRQ1cYw4vw5ewSyT8xSJuRG");
     f.svm
-        .add_program_from_file(
-            program,
-            concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/../../target/deploy/giveaways.so"
-            ),
-        )
+        .add_program_from_file(program, program_artifact("giveaways.so"))
         .unwrap();
     let rel = f.register_domain(program, wire::GIVEAWAY);
     let cfg = Pubkey::find_program_address(&[b"config"], &program).0;
@@ -1142,13 +1123,7 @@ fn real_daily_weighted_selection_and_public_replay_fixture() {
     let mut f = Fixture::new();
     let program = Pubkey::new_unique();
     f.svm
-        .add_program_from_file(
-            program,
-            concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/../../target/deploy/daily_lottery.so"
-            ),
-        )
+        .add_program_from_file(program, program_artifact("daily_lottery.so"))
         .unwrap();
     let rel = f.register(program);
     let cfg = f.daily_setup(program, rel);

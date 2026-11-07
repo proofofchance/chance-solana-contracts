@@ -71,7 +71,7 @@ pub const MAX_WINNERS_PER_BATCH: usize = 50;
 
 // Proof-of-chance domains
 pub const GIVEAWAY_ATTESTATION_DOMAIN_V1: &[u8] = b"GIVEAWAY_ATTEST_V1";
-pub const GIVEAWAY_REVEAL_DOMAIN_V1: &[u8] = b"GIVEAWAY_REVEAL_V1";
+pub const GIVEAWAY_LUCKY_PHRASE_DOMAIN_V1: &[u8] = b"GIVEAWAY_LUCKY_PHRASE_V1";
 pub const GIVEAWAY_SEED_DOMAIN_V1: &[u8] = b"GIVEAWAY_SEED_V1";
 pub const GIVEAWAY_DRAW_DOMAIN_V1: &[u8] = b"GIVEAWAY_DRAW_V1";
 pub const GIVEAWAY_RULE_VERSION_V1: &str = "giveaway-poc-v1";
@@ -80,7 +80,7 @@ pub const GIVEAWAY_FINALIZATION_SEED_DOMAIN_V3: &[u8] = b"GIVEAWAY_FINALIZE_SEED
 pub const GIVEAWAY_RANK_DOMAIN_V2: &[u8] = b"GIVEAWAY_RANK_V2";
 pub const GIVEAWAY_RULE_VERSION_V2: &str = "giveaway-poc-radix-threshold-v2";
 pub const GIVEAWAY_RULE_VERSION_V3: &str = "giveaway-poc-indexed-radix-v3";
-pub const GIVEAWAY_RULE_VERSION_V4: &str = "giveaway-poc-indexed-radix-v4-archival";
+pub const GIVEAWAY_LUCKY_PHRASE_RULE_V1: &str = "giveaway-lucky-phrase-v1-indexed-radix";
 
 // PDA Seeds
 pub const CONFIG_SEED: &[u8] = b"config";

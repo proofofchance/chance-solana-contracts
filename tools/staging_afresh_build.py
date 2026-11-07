@@ -26,6 +26,9 @@ KEYS = ('schema', 'environment', 'genesis_hash', 'registry_program',
 PROGRAMS = {'chance_registry': 'registry', 'daily_lottery': 'daily-lottery-v1', 'giveaways': 'giveaways-v1'}
 ROOTS = ('programs', 'crates', '.cargo', 'Cargo.lock', 'rust-toolchain.toml', 'tools/idl-export')
 MAX_TARGET_ENTRIES = 200000
+TREES = ('private', 'public')
+OUTPUTS = tuple(f'{library}.so' for library in PROGRAMS) + ('giveaways-staging-afresh-v1.idl.json',)
+TREE_RECORD = 'tree.json'
 
 
 def _identity(metadata):
@@ -290,7 +293,7 @@ def source_snapshot(source, destination, input_bytes):
     (destination / INPUT_PATH).write_bytes(input_bytes)
 
 
-def build_overlay(source, verifier='solana-verify', *, overlay):
+def build_overlay(source, verifier='solana-verify', *, overlay, daily_test_controls=False):
     if source != overlay.path:
         raise ValueError('Builder requires its minted source overlay')
     overlay.check()
@@ -301,7 +304,7 @@ def build_overlay(source, verifier='solana-verify', *, overlay):
     for library in PROGRAMS:
         try:
             subprocess.run([verifier, 'build', '--library-name', library, '--base-image', IMAGE,
-                            str(source), '--', '-Znext-lockfile-bump', '--features', 'staging-afresh-v1'],
+                            str(source), '--', '-Znext-lockfile-bump', '--features', ','.join(features(library, daily_test_controls))],
                            cwd=source, env=environment, check=True)
         except BaseException:
             try:
@@ -317,8 +320,7 @@ def build_overlay(source, verifier='solana-verify', *, overlay):
 
 def retain_only_build_outputs(source):
     """Bound scratch disk between independent builds; never called on checkouts."""
-    files = [f'{library}.so' for library in PROGRAMS] + ['giveaways-staging-afresh-v1.idl.json']
-    retained = {name: (source / 'target/deploy' / name).read_bytes() for name in files}
+    retained = {name: (source / 'target/deploy' / name).read_bytes() for name in OUTPUTS}
     target = source / 'target'
     if target.is_symlink():
         raise ValueError('Scratch build target cannot be a symlink')
@@ -328,13 +330,19 @@ def retain_only_build_outputs(source):
         (target / 'deploy' / name).write_bytes(data)
 
 
-def artifact_manifest(library, elf, public_commit, private_commit, fingerprints, inputs):
+def features(library, daily_test_controls=False):
+    if type(daily_test_controls) is not bool or library not in PROGRAMS:
+        raise ValueError('Explicit staging testing selection required')
+    return ['staging-afresh-v1'] + (['staging-test-controls', 'allow-early-upload'] if library == 'daily_lottery' and daily_test_controls else [])
+
+
+def artifact_manifest(library, elf, public_commit, private_commit, fingerprints, inputs, *, daily_test_controls=False):
     program = PROGRAMS[library]
     source = {'repository': 'https://github.com/proofofchance/chance-solana-contracts',
               'commit': public_commit, 'privateCommit': private_commit, 'mountRoot': '.',
               'manifest': f'programs/{program}/Cargo.toml', 'library': library,
-              'features': ['staging-afresh-v1'], 'buildImage': IMAGE, 'verifierVersion': '0.4.11',
-              'rustToolchain': '1.89.0', 'cargoArgs': ['-Znext-lockfile-bump', '--features', 'staging-afresh-v1'],
+              'features': features(library, daily_test_controls), 'buildImage': IMAGE, 'verifierVersion': '0.4.11',
+              'rustToolchain': '1.89.0', 'cargoArgs': ['-Znext-lockfile-bump', '--features', ','.join(features(library, daily_test_controls))],
               'verifierSuppliesLocked': True, 'lockSha256': fingerprints[f'programs/{program}/Cargo.lock'],
               'sourceInputsSha256': digest(canonical(fingerprints).encode()),
               'releaseInputs': {'path': INPUT_PATH, 'text': inputs.decode('ascii'), 'sha256': digest(inputs)}}
@@ -346,7 +354,96 @@ def artifact_manifest(library, elf, public_commit, private_commit, fingerprints,
             'deployment': None, 'status': 'reproduced build only; no deployed match or security approval'}
 
 
-def reproduce(private_source, public_source, input_file, output, *, verifier='solana-verify', build=None):
+def _commit(source):
+    commit = git(source, 'rev-parse', 'HEAD')
+    if not re.fullmatch('[a-f0-9]{40}', commit):
+        raise ValueError('Exact source commit references are required')
+    return commit
+
+
+def _require_public(source):
+    # Refuse a private tree masquerading as the independent public source checkout.
+    public_remote = git(source, 'remote', 'get-url', 'origin')
+    if public_remote not in ('git@github.com:proofofchance/chance-solana-contracts.git',
+                             'https://github.com/proofofchance/chance-solana-contracts.git',
+                             'https://github.com/proofofchance/chance-solana-contracts'):
+        raise ValueError('The independent source must use the canonical public repository')
+
+
+def _require_verifier(verifier):
+    version = subprocess.check_output([verifier, '--version'], text=True).strip()
+    if version != 'solana-verify 0.4.11':
+        raise ValueError('solana-verify 0.4.11 is required')
+
+
+def _matching_sources(private_source, public_source):
+    if private_source == public_source:
+        raise ValueError('Independent private and public checkouts are required')
+    private_fingerprints = source_inputs(private_source)
+    public_fingerprints = source_inputs(public_source)
+    if private_fingerprints != public_fingerprints:
+        raise ValueError('Canonical private and public build inputs differ; promote and qualify source first')
+    private_commit, public_commit = _commit(private_source), _commit(public_source)
+    _require_public(public_source)
+    return private_fingerprints, private_commit, public_commit
+
+
+def _build_tree(scratch, tree, source, input_bytes, verifier, build, daily_test_controls):
+    path = scratch.path / tree
+    source_snapshot(source, path, input_bytes)
+    overlay = scratch.bind(tree)
+    if build is None:
+        build_overlay(path, verifier, overlay=overlay, daily_test_controls=daily_test_controls)
+    else:
+        build(path, verifier)
+    overlay.check()
+    retain_only_build_outputs(path)
+    return {name: (path / 'target/deploy' / name).read_bytes() for name in OUTPUTS}
+
+
+def _publish(result, outputs, identities, input_bytes, fingerprints, public_commit, private_commit, daily_test_controls):
+    """Compare both trees' exact bytes and write the epoch record into `result`."""
+    first, second = outputs['private'], outputs['public']
+    libraries = {}
+    for library in PROGRAMS:
+        elf = first[f'{library}.so']
+        if elf[:4] != b'\x7fELF' or elf != second[f'{library}.so']:
+            raise ValueError('Independent source builds do not reproduce exact ELF bytes')
+        manifest = artifact_manifest(library, elf, public_commit, private_commit, fingerprints, input_bytes, daily_test_controls=daily_test_controls)
+        (result / f'{library}.so').write_bytes(elf)
+        (result / f'{library}.manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        libraries[library] = {'elf': f'{library}.so', 'manifest': manifest}
+    idl_name = OUTPUTS[-1]
+    idl = first[idl_name]
+    if idl != second[idl_name] or json.loads(idl)['address'] != identities['giveaways_program']:
+        raise ValueError('Fresh giveaway IDL differs from its compiled program identity')
+    (result / idl_name).write_bytes(idl)
+    (result / 'staging-afresh-v1.inputs').write_bytes(input_bytes)
+    record = {'schema': 2, 'kind': 'staging_afresh_v1_artifacts', 'environment': 'staging',
+              'genesisHash': GENESIS, 'identities': identities, 'inputs': fingerprints,
+              'publicCommit': public_commit, 'privateCommit': private_commit,
+              'releaseInputsSha256': digest(input_bytes), 'libraries': libraries,
+              'idl': idl_name, 'idlSha256': digest(idl),
+              'provenance': {'kind': 'local_private_public_reproduction', 'independentTrees': 2,
+                             'exactElfBytesEqual': True, 'publicCiRun': None}}
+    if daily_test_controls:
+        record['dailyTestControls'] = True
+    (result / 'artifacts.json').write_text(json.dumps(record, indent=2) + '\n')
+    return record
+
+
+def _admit(result, output, record='artifacts.json'):
+    # Claim a missing directory exclusively, then publish the record last.
+    # An interrupted publication has no admission record and cannot be used.
+    output.mkdir()
+    for file in result.iterdir():
+        if file.name != record:
+            os.rename(file, output / file.name)
+    os.rename(result / record, output / record)
+
+
+def reproduce(private_source, public_source, input_file, output, *, verifier='solana-verify', build=None, daily_test_controls=False):
+    features("daily_lottery", daily_test_controls)
     private_source, public_source = private_source.resolve(), public_source.resolve()
     if private_source == public_source:
         raise ValueError('Independent private and public checkouts are required')
@@ -354,81 +451,125 @@ def reproduce(private_source, public_source, input_file, output, *, verifier='so
         raise ValueError('Fresh build output already exists; retain it and choose a new epoch output')
     input_bytes = input_file.read_bytes()
     identities = parse_inputs(input_bytes)
-    private_fingerprints = source_inputs(private_source)
-    public_fingerprints = source_inputs(public_source)
-    if private_fingerprints != public_fingerprints:
-        raise ValueError('Canonical private and public build inputs differ; promote and qualify source first')
-    private_commit, public_commit = (git(source, 'rev-parse', 'HEAD') for source in (private_source, public_source))
-    if not all(re.fullmatch('[a-f0-9]{40}', commit) for commit in (private_commit, public_commit)):
-        raise ValueError('Exact source commit references are required')
-    # Refuse a private tree masquerading as the independent public source checkout.
-    public_remote = git(public_source, 'remote', 'get-url', 'origin')
-    if public_remote not in ('git@github.com:proofofchance/chance-solana-contracts.git',
-                             'https://github.com/proofofchance/chance-solana-contracts.git',
-                             'https://github.com/proofofchance/chance-solana-contracts'):
-        raise ValueError('The independent source must use the canonical public repository')
-    version = subprocess.check_output([verifier, '--version'], text=True).strip()
-    if version != 'solana-verify 0.4.11':
-        raise ValueError('solana-verify 0.4.11 is required')
+    fingerprints, private_commit, public_commit = _matching_sources(private_source, public_source)
+    _require_verifier(verifier)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='.afresh-artifacts-', dir=output.parent) as publication:
         result = Path(publication)
         with _Scratch(output.parent) as scratch:
-            first, second = scratch.path / 'private', scratch.path / 'public'
-            source_snapshot(private_source, first, input_bytes)
-            private_overlay = scratch.bind('private')
-            source_snapshot(public_source, second, input_bytes)
-            public_overlay = scratch.bind('public')
-            for source, overlay in [(first, private_overlay), (second, public_overlay)]:
-                if build is None:
-                    build_overlay(source, verifier, overlay=overlay)
-                else:
-                    build(source, verifier)
-                overlay.check()
-                retain_only_build_outputs(source)
-            libraries = {}
-            for library in PROGRAMS:
-                relative = Path('target/deploy') / f'{library}.so'
-                elf = (first / relative).read_bytes()
-                if elf[:4] != b'\x7fELF' or elf != (second / relative).read_bytes():
-                    raise ValueError('Independent source builds do not reproduce exact ELF bytes')
-                manifest = artifact_manifest(library, elf, public_commit, private_commit, private_fingerprints, input_bytes)
-                (result / f'{library}.so').write_bytes(elf)
-                (result / f'{library}.manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-                libraries[library] = {'elf': f'{library}.so', 'manifest': manifest}
-            relative_idl = Path('target/deploy/giveaways-staging-afresh-v1.idl.json')
-            idl = (first / relative_idl).read_bytes()
-            if idl != (second / relative_idl).read_bytes() or json.loads(idl)['address'] != identities['giveaways_program']:
-                raise ValueError('Fresh giveaway IDL differs from its compiled program identity')
-            (result / relative_idl.name).write_bytes(idl)
-            (result / 'staging-afresh-v1.inputs').write_bytes(input_bytes)
-            record = {'schema': 2, 'kind': 'staging_afresh_v1_artifacts', 'environment': 'staging',
-                      'genesisHash': GENESIS, 'identities': identities, 'inputs': private_fingerprints,
-                      'publicCommit': public_commit, 'privateCommit': private_commit,
-                      'releaseInputsSha256': digest(input_bytes), 'libraries': libraries,
-                      'idl': relative_idl.name, 'idlSha256': digest(idl),
-                      'provenance': {'kind': 'local_private_public_reproduction', 'independentTrees': 2,
-                                     'exactElfBytesEqual': True, 'publicCiRun': None}}
-            (result / 'artifacts.json').write_text(json.dumps(record, indent=2) + '\n')
+            outputs = {tree: _build_tree(scratch, tree, source, input_bytes, verifier, build, daily_test_controls)
+                       for tree, source in zip(TREES, (private_source, public_source))}
+            record = _publish(result, outputs, identities, input_bytes, fingerprints, public_commit, private_commit, daily_test_controls)
         # Scratch cleanup must succeed before the admission record is published.
-        # Claim a missing directory exclusively, then publish artifacts.json last.
-        # An interrupted publication has no admission record and cannot be used.
-        output.mkdir()
-        for file in result.iterdir():
-            if file.name != 'artifacts.json':
-                os.rename(file, output / file.name)
-        os.rename(result / 'artifacts.json', output / 'artifacts.json')
+        _admit(result, output)
+    return record
+
+
+def build_tree(tree, source, input_file, output, *, verifier='solana-verify', build=None, daily_test_controls=False):
+    """Build one independent tree, so CI can build both trees at the same time.
+
+    The output is not an epoch artifact: `combine` must compare it with the other
+    tree's output against both checkouts before anything is admitted.
+    """
+    features("daily_lottery", daily_test_controls)
+    if tree not in TREES:
+        raise ValueError('Select the private or public source tree')
+    source = source.resolve()
+    if output.exists():
+        raise ValueError('Fresh build output already exists; retain it and choose a new epoch output')
+    input_bytes = input_file.read_bytes()
+    parse_inputs(input_bytes)
+    fingerprints = source_inputs(source)
+    commit = _commit(source)
+    if tree == 'public':
+        _require_public(source)
+    _require_verifier(verifier)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.afresh-tree-', dir=output.parent) as publication:
+        result = Path(publication)
+        with _Scratch(output.parent) as scratch:
+            files = _build_tree(scratch, tree, source, input_bytes, verifier, build, daily_test_controls)
+            for name, data in files.items():
+                (result / name).write_bytes(data)
+            record = _tree_record(tree, commit, fingerprints, input_bytes, files, daily_test_controls)
+            (result / TREE_RECORD).write_text(json.dumps(record, indent=2) + '\n')
+        _admit(result, output, TREE_RECORD)
+    return record
+
+
+def _tree_record(tree, commit, fingerprints, input_bytes, files, daily_test_controls):
+    return {'schema': 1, 'kind': 'staging_afresh_v1_tree', 'tree': tree, 'commit': commit,
+            'inputs': fingerprints, 'releaseInputsSha256': digest(input_bytes),
+            'dailyTestControls': daily_test_controls,
+            'files': {name: digest(data) for name, data in sorted(files.items())}}
+
+
+def _tree_outputs(directory, expected):
+    names = set()
+    for entry in directory.iterdir():
+        if not stat.S_ISREG(entry.lstat().st_mode):
+            raise ValueError('Independent tree output must contain regular files only')
+        names.add(entry.name)
+    if names != set(OUTPUTS) | {TREE_RECORD}:
+        raise ValueError('Independent tree output inventory differs')
+    files = {name: (directory / name).read_bytes() for name in OUTPUTS}
+    if json.loads((directory / TREE_RECORD).read_bytes()) != expected(files):
+        raise ValueError('Independent tree record differs from its source, inputs or bytes')
+    return files
+
+
+def combine(private_source, public_source, input_file, trees, output, *, daily_test_controls=False):
+    """Publish an epoch from the two separately built trees of `build_tree`.
+
+    Both checkouts are fingerprinted again and each tree must name its own commit,
+    the shared fingerprints and inputs, and the exact bytes it carries.
+    """
+    features("daily_lottery", daily_test_controls)
+    private_source, public_source = private_source.resolve(), public_source.resolve()
+    if output.exists():
+        raise ValueError('Fresh build output already exists; retain it and choose a new epoch output')
+    input_bytes = input_file.read_bytes()
+    identities = parse_inputs(input_bytes)
+    fingerprints, private_commit, public_commit = _matching_sources(private_source, public_source)
+    outputs = {}
+    for tree, commit in zip(TREES, (private_commit, public_commit)):
+        outputs[tree] = _tree_outputs(trees[tree], lambda files, tree=tree, commit=commit: _tree_record(
+            tree, commit, fingerprints, input_bytes, files, daily_test_controls))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.afresh-artifacts-', dir=output.parent) as publication:
+        result = Path(publication)
+        record = _publish(result, outputs, identities, input_bytes, fingerprints, public_commit, private_commit, daily_test_controls)
+        _admit(result, output)
     return record
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--private-source', required=True, type=Path)
-    parser.add_argument('--public-source', required=True, type=Path)
+    parser.add_argument('--private-source', type=Path)
+    parser.add_argument('--public-source', type=Path)
     parser.add_argument('--inputs', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--daily-test-controls', action='store_true', help='Explicit fresh Devnet begin-upload testing capability; daily artifact only')
+    parser.add_argument('--tree', choices=TREES, help='Build only this tree into --output for a later --combine')
+    parser.add_argument('--combine', nargs=2, type=Path, metavar=('PRIVATE_TREE', 'PUBLIC_TREE'),
+                        help='Compare and publish two --tree outputs instead of building')
     args = parser.parse_args()
-    record = reproduce(args.private_source, args.public_source, args.inputs, args.output.resolve())
+    if args.tree:
+        source = args.private_source if args.tree == 'private' else args.public_source
+        other = args.public_source if args.tree == 'private' else args.private_source
+        if source is None or other is not None or args.combine:
+            parser.error('--tree takes only its own --private-source or --public-source')
+        record = build_tree(args.tree, source, args.inputs, args.output.resolve(), daily_test_controls=args.daily_test_controls)
+        print(json.dumps({'output': str(args.output.resolve()), 'tree': record['tree'], 'commit': record['commit'],
+                          'releaseInputsSha256': record['releaseInputsSha256'], 'deployed': False}))
+        return
+    if args.private_source is None or args.public_source is None:
+        parser.error('--private-source and --public-source are required')
+    if args.combine:
+        trees = dict(zip(TREES, args.combine))
+        record = combine(args.private_source, args.public_source, args.inputs, trees, args.output.resolve(), daily_test_controls=args.daily_test_controls)
+    else:
+        record = reproduce(args.private_source, args.public_source, args.inputs, args.output.resolve(), daily_test_controls=args.daily_test_controls)
     print(json.dumps({'output': str(args.output.resolve()), 'publicCommit': record['publicCommit'],
                       'releaseInputsSha256': record['releaseInputsSha256'], 'deployed': False}))
 

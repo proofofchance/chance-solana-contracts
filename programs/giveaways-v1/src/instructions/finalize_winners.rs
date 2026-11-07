@@ -402,7 +402,7 @@ fn finalize_settlement_root(
         winners_ledger: winners.key().to_string(),
         merkle_root: hex::encode(commitment),
         seed: hex::encode(root.seed),
-        rule_version: GIVEAWAY_RULE_VERSION_V4.to_string(),
+        rule_version: GIVEAWAY_LUCKY_PHRASE_RULE_V1.to_string(),
         total_eligible: root.eligible_count,
         winners_count,
         total_payout_lamports: total,

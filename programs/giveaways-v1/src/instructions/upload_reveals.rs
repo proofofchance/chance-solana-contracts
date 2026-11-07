@@ -10,9 +10,7 @@ use crate::{
     error::GiveawayError,
     state::{Config, Giveaway, Participant},
     utils::{
-        crypto::{
-            build_reveal_plaintext, compute_reveal_digest, verify_reveal, xor_reveal_digests,
-        },
+        crypto::{compute_reveal_digest, verify_reveal, xor_reveal_digests},
         pda::assert_pda_owned,
     },
 };
@@ -165,8 +163,7 @@ pub fn process(ctx: Context<UploadReveals>, reveals: Vec<RevealData>) -> Result<
             GiveawayError::InvalidReveal
         );
 
-        let plaintext = build_reveal_plaintext(&reveal.lucky_words, &reveal.salt)?;
-        let reveal_digest = compute_reveal_digest(&participant.wallet, &plaintext);
+        let reveal_digest = compute_reveal_digest(&participant.wallet, &reveal.lucky_words);
         reveal_digests.push(reveal_digest);
 
         // Mark reveal as included and write back.
@@ -205,6 +202,7 @@ pub fn process(ctx: Context<UploadReveals>, reveals: Vec<RevealData>) -> Result<
         total_reveals_uploaded: giveaway.provider_uploaded_count,
         total_attested: giveaway.attested_count,
         aggregate_hash: hex::encode(aggregate_hash),
+        rule_version: GIVEAWAY_LUCKY_PHRASE_RULE_V1.to_string(),
         uploads_complete: giveaway.uploads_complete,
         timestamp: clock.unix_timestamp,
     }

@@ -3,7 +3,7 @@
 mod common;
 
 use borsh::{BorshDeserialize, BorshSerialize};
-use common::{assert_custom_error, TestContext};
+use common::{assert_custom_error, max_compute_budget, TestContext};
 use daily_lottery::{
     error::Error,
     instructions::settle_payout_batch::WinnerProof,
@@ -409,7 +409,8 @@ fn finalize_winners_chunk(
         &authority.pubkey(),
         (next_slot % 9).saturating_add(1),
     );
-    send_tx(ctx, vec![nonce_ix, ix], &[authority])
+    // The operator sets an explicit compute budget for winner finalization.
+    send_tx(ctx, vec![max_compute_budget(), nonce_ix, ix], &[authority])
 }
 
 fn finalize_winners_until_complete(

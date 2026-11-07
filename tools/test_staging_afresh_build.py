@@ -56,6 +56,21 @@ class FreshBuildTests(unittest.TestCase):
         changed = build.artifact_manifest('chance_registry', b'\x7fELFcode\0\0', '11' * 20, '22' * 20, fingerprints, inputs().replace(key(4).encode(), key(5).encode()))
         self.assertNotEqual(changed['sourceReferenceSha256'], manifest['sourceReferenceSha256'])
 
+    def test_testing_features_are_explicit_and_daily_only(self):
+        for library in build.PROGRAMS:
+            self.assertEqual(build.features(library), ['staging-afresh-v1'])
+            selected = build.features(library, True)
+            self.assertEqual(selected, ['staging-afresh-v1'] + (['staging-test-controls', 'allow-early-upload'] if library == 'daily_lottery' else []))
+            manifest = build.artifact_manifest(library, b'\x7fELFtest', '11'*20, '22'*20,
+                {f'programs/{build.PROGRAMS[library]}/Cargo.lock': 'ab'*32}, inputs(), daily_test_controls=True)
+            self.assertEqual(manifest['source']['features'], selected)
+            self.assertEqual(manifest['source']['cargoArgs'][-1], ','.join(selected))
+        for bad in (None, 1, 'true'):
+            with self.assertRaises(ValueError):
+                build.features('daily_lottery', bad)
+        with self.assertRaises(ValueError):
+            build.features('unknown', True)
+
     def test_private_public_source_mismatch_fails_before_any_builder(self):
         with tempfile.TemporaryDirectory() as directory:
             directory = Path(directory)
@@ -125,6 +140,110 @@ class FreshBuildTests(unittest.TestCase):
                 with self.assertRaisesRegex(PermissionError, 'cleanup failure'):
                     build.reproduce(directory / 'private', directory / 'public', input_file, directory / 'output', build=builder)
             self.assertFalse((directory / 'output').exists())
+
+
+class SeparateTreeTests(unittest.TestCase):
+    """CI builds each tree in its own job; only `combine` may publish an epoch."""
+    fingerprints = {f'programs/{program}/Cargo.lock': 'ab' * 32 for program in build.PROGRAMS.values()}
+
+    @staticmethod
+    def fake_git(source, *arguments):
+        if arguments[0] == 'remote':
+            return 'https://github.com/proofofchance/chance-solana-contracts.git'
+        return ('11' if 'public' in source.name else '22') * 20
+
+    @staticmethod
+    def snapshot(source, destination, public_inputs):
+        destination.mkdir(); (destination / 'target/deploy').mkdir(parents=True)
+
+    @staticmethod
+    def builder(source, verifier):
+        for library in build.PROGRAMS:
+            (source / f'target/deploy/{library}.so').write_bytes(b'\x7fELF' + library.encode())
+        (source / 'target/deploy/giveaways-staging-afresh-v1.idl.json').write_text(json.dumps({'address': key(3)}))
+
+    def patched(self):
+        stack = contextlib.ExitStack()
+        stack.enter_context(patch.object(build, 'source_inputs', return_value=self.fingerprints))
+        stack.enter_context(patch.object(build, 'git', side_effect=self.fake_git))
+        stack.enter_context(patch.object(build, 'source_snapshot', side_effect=self.snapshot))
+        stack.enter_context(patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.4.11\n'))
+        return stack
+
+    def trees(self, directory, input_file, builder=None):
+        with self.patched():
+            for tree in build.TREES:
+                record = build.build_tree(tree, directory / f'{tree}-source', input_file, directory / tree, build=builder or self.builder)
+                self.assertEqual(record['tree'], tree)
+                self.assertFalse((directory / tree / 'artifacts.json').exists())
+        return {tree: directory / tree for tree in build.TREES}
+
+    def combine(self, directory, input_file, trees, output='output'):
+        with self.patched():
+            return build.combine(directory / 'private-source', directory / 'public-source', input_file, trees, directory / output)
+
+    def test_separately_built_trees_publish_the_same_record_as_one_reproduction(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            input_file = directory / 'inputs'; input_file.write_bytes(inputs())
+            record = self.combine(directory, input_file, self.trees(directory, input_file))
+            with self.patched():
+                together = build.reproduce(directory / 'private-source', directory / 'public-source', input_file, directory / 'together', build=self.builder)
+            self.assertEqual(record, together)
+            for name in sorted(path.name for path in (directory / 'together').iterdir()):
+                self.assertEqual((directory / 'output' / name).read_bytes(), (directory / 'together' / name).read_bytes())
+
+    def test_combine_rejects_changed_mismatched_or_unbound_tree_outputs(self):
+        def different(source, verifier):
+            self.builder(source, verifier)
+            if source.name == 'public':
+                (source / 'target/deploy/daily_lottery.so').write_bytes(b'\x7fELFdifferent')
+        cases = {
+            'record differs': lambda trees: (trees['public'] / 'daily_lottery.so').write_bytes(b'\x7fELFswapped'),
+            'inventory differs': lambda trees: (trees['private'] / 'extra.so').write_bytes(b'extra'),
+            'regular files only': lambda trees: (trees['private'] / 'link').symlink_to(trees['private'] / 'tree.json'),
+            'record differs ': lambda trees: (trees['public'] / 'tree.json').write_text(
+                (trees['private'] / 'tree.json').read_text()),
+        }
+        for reason, change in cases.items():
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory() as directory:
+                directory = Path(directory)
+                input_file = directory / 'inputs'; input_file.write_bytes(inputs())
+                trees = self.trees(directory, input_file)
+                change(trees)
+                with self.assertRaisesRegex(ValueError, reason.strip()):
+                    self.combine(directory, input_file, trees)
+                self.assertFalse((directory / 'output').exists())
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            input_file = directory / 'inputs'; input_file.write_bytes(inputs())
+            trees = self.trees(directory, input_file, builder=different)
+            with self.assertRaisesRegex(ValueError, 'exact ELF'):
+                self.combine(directory, input_file, trees)
+            self.assertFalse((directory / 'output').exists())
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            input_file = directory / 'inputs'; input_file.write_bytes(inputs())
+            trees = self.trees(directory, input_file)
+            other = directory / 'other-inputs'; other.write_bytes(inputs().replace(key(4).encode(), key(5).encode()))
+            with self.assertRaisesRegex(ValueError, 'record differs'):
+                self.combine(directory, other, trees)
+            self.assertFalse((directory / 'output').exists())
+
+    def test_a_tree_builds_only_its_own_checkout_into_a_new_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            input_file = directory / 'inputs'; input_file.write_bytes(inputs())
+            with self.patched():
+                with self.assertRaisesRegex(ValueError, 'private or public'):
+                    build.build_tree('both', directory / 'source', input_file, directory / 'tree', build=self.builder)
+                (directory / 'tree').mkdir()
+                with self.assertRaisesRegex(ValueError, 'already exists'):
+                    build.build_tree('private', directory / 'source', input_file, directory / 'tree', build=self.builder)
+            with self.patched(), patch.object(build, 'git', side_effect=lambda source, *a: 'https://example.com/fork.git' if a[0] == 'remote' else '11' * 20):
+                with self.assertRaisesRegex(ValueError, 'canonical public repository'):
+                    build.build_tree('public', directory / 'source', input_file, directory / 'public', build=lambda *_: self.fail('builder called'))
+            self.assertFalse((directory / 'public').exists())
 
 
 class ScratchOwnershipTests(unittest.TestCase):

@@ -115,6 +115,8 @@ pub enum LotteryEvent {
         authority: String,
         participants_count: u64,
         aggregate_hash: [u8; 32],
+        #[serde(default)]
+        rule_version: String,
         selected_number_of_winners: u64,
         timestamp: i64,
     },

@@ -56,6 +56,14 @@ def receipt_authorized(tx, index, authority, message):
     return False
 
 
+def read_reveal_plaintext(reader, domain, phrase_only):
+    if domain == 'daily':
+        return reader.value('Vec<u8>')
+    phrase = reader.value('String').encode()
+    check(not phrase_only or b'\x1f' not in phrase, 'Giveaway phrase contains the commitment separator')
+    return phrase + b'\x1f' + reader.value('Vec<u8>')
+
+
 def replay(rpc, report, history=None):
     domain, state = report['domain'], report['state']
     instance, program = report['instance'], report['programs']['instance']['program']
@@ -72,6 +80,8 @@ def replay(rpc, report, history=None):
     unknowns = []
     checks = ['initial_rules_hash']
     computed = None
+    legacy_rule, phrase_rule = reference.SELECTION_RULES[domain]
+    selection_rule = None
     for tx in rows:
         records = [record for record in events(tx['record']['meta']['logMessages'],program) if record['data'].get('lottery' if domain=='daily' else 'giveaway')==instance]
         if not records:
@@ -129,16 +139,19 @@ def replay(rpc, report, history=None):
                     check(receipt_authorized(tx,index,authority,message),'Missing prior provider Ed25519 receipt verification')
                 p.update(attested=True,attested_at=timestamp,vote=vote)
             elif name=='RevealsUploaded':
+                rule = event.get('rule_version', legacy_rule)
+                if rule not in (legacy_rule, phrase_rule):
+                    raise Incomplete('Unsupported winner selection rule')
+                check(selection_rule is None or selection_rule == rule, 'Selection rule changed across reveal batches')
+                selection_rule = rule
+                phrase_only = rule == phrase_rule
                 reader=Reader(raw[1:] if domain=='daily' else raw[8:])
                 reveals=[]
                 if direct:
                     wallet=accounts[3]
                     if domain=='daily':
                         reader.integer(8)
-                        plaintext=reader.value('Vec<u8>')
-                    else:
-                        plaintext=reader.value('String').encode()+b'\x1f'+reader.value('Vec<u8>')
-                    reveals=[(wallet,plaintext)]
+                    reveals=[(wallet,read_reveal_plaintext(reader,domain,phrase_only))]
                 else:
                     check(raw[:1]==b'\x05' if domain=='daily' else raw[:8]==hashlib.sha256(b'global:upload_reveals').digest()[:8],'Unknown reveal instruction')
                     count=reader.integer(4)
@@ -147,8 +160,7 @@ def replay(rpc, report, history=None):
                         who=reader.value('Pubkey')
                         wallet=who if domain=='daily' else next((p['wallet'] for p in people.values() if p['account']==who),None)
                         if wallet is None: raise Incomplete('Reveal refers to an unknown participant account')
-                        plaintext=reader.value('Vec<u8>') if domain=='daily' else reader.value('String').encode()+b'\x1f'+reader.value('Vec<u8>')
-                        reveals.append((wallet,plaintext))
+                        reveals.append((wallet,read_reveal_plaintext(reader,domain,phrase_only)))
                     if timestamp<state['upload_deadline_unix']:
                         check(all(p['attested'] for p in people.values() if not p['disqualified']),'Provider revealed before all eligible attestations')
                         check(authority in signers,'Premature publication lacks provider signature')
@@ -157,8 +169,7 @@ def replay(rpc, report, history=None):
                     p=people[wallet]
                     if p['included']: continue
                     check(p['attested'] and not p['disqualified'] and hashlib.sha256(plaintext).digest()==p['commitment'],'Reveal does not match accepted commitment')
-                    prefix=b'IKIGAI_RPD_V2_REVEAL' if domain=='daily' else b'GIVEAWAY_REVEAL_V1'
-                    p.update(included=True,digest=reference.sha(prefix+pubkey(wallet)+reference.le(len(plaintext),4)+plaintext))
+                    p.update(included=True,digest=reference.reveal_digest(domain,wallet,plaintext,phrase_only))
                 check(reference.aggregate(people.values())==digest(event['aggregate_hash']),'Reveal aggregate mismatch')
             elif name=='WinnerSelected':
                 if domain=='giveaway': check(authority in signers,'Winner selection lacks provider authority')
@@ -168,6 +179,7 @@ def replay(rpc, report, history=None):
                 check(authority in signers,'Finalization lacks frozen provider authority')
             elif name=='WinnersComputed':
                 check(not vested and not refunded and timestamp<state['settlement_deadline_unix'],'Late or repeated vesting')
+                check(event['rule_version']==selection_rule,'Vested selection rule differs from reveal evidence')
                 check(all(p['included'] for p in people.values() if p['attested']),'Vesting omits accepted reveals')
                 computed=(reference.daily if domain=='daily' else reference.giveaway)(state,list(people.values()))
                 check(computed['seed']==digest(event['seed']) and computed['winners']==selected,'Independent selection differs from recorded winners')

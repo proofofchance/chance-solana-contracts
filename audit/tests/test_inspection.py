@@ -7,6 +7,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
+import reference
 from common import Incomplete, Mismatch, Reader, b58decode, b58encode, pda, pubkey
 from inspect_instance import inspect
 
@@ -30,6 +31,20 @@ class WireTests(unittest.TestCase):
     def test_pda_seed_limits(self):
         with self.assertRaises(Incomplete):
             pda('1'*32, bytes(33))
+
+
+class SelectionRuleTests(unittest.TestCase):
+    def test_v1_lucky_phrase_digest_is_independent_of_the_salt(self):
+        wallet = b58encode(bytes(range(32)))
+        first, second = b'hello\x1f7', b'hello\x1f8\x1f'
+        self.assertNotEqual(reference.sha(first), reference.sha(second))
+        for domain in ('daily', 'giveaway'):
+            with self.subTest(domain=domain):
+                digest = reference.reveal_digest(domain, wallet, first, True)
+                self.assertEqual(digest, reference.reveal_digest(domain, wallet, second, True))
+                self.assertNotEqual(digest, reference.reveal_digest(domain, wallet, b'jello\x1f7', True))
+                self.assertNotEqual(reference.reveal_digest(domain, wallet, first, False),
+                                    reference.reveal_digest(domain, wallet, second, False))
 
 
 class FixtureRpc:
