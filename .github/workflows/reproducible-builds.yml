@@ -48,7 +48,7 @@ jobs:
           python3 tools/build_manifest.py --repository "https://github.com/$GITHUB_REPOSITORY" --commit "$(git rev-parse HEAD)" --library '${{ matrix.library }}' --elf 'target/deploy/${{ matrix.library }}.so' --output 'releases/ci/${{ matrix.artifact || matrix.library }}.manifest.json' ${{ matrix.features && format('--features {0}', matrix.features) || '' }}
       - name: Keep feature ELF isolated
         if: matrix.features == 'brand-review'
-        run: mv target/deploy/giveaways.so target/deploy/giveaways-brand-review-v1.so
+        run: sudo mv target/deploy/giveaways.so target/deploy/giveaways-brand-review-v1.so
       - uses: actions/upload-artifact@v4
         with:
           name: reproducible-${{ matrix.artifact || matrix.library }}
