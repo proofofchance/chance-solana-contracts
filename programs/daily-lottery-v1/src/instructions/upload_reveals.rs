@@ -11,7 +11,9 @@ use crate::{
     state::{Config, Lottery, Participant, VoteTally},
     utils::{
         account::{read_account_data, validate_account_discriminator, write_account_data},
-        crypto::{compute_reveal_digest, xor_reveal_digests},
+        crypto::{
+            compute_reveal_digest, lucky_phrase_bytes, xor_reveal_digests, WINNER_ALGO_RULE_VERSION,
+        },
         limits::MAX_REVEAL_PLAINTEXT_BYTES,
         pda::{assert_pda_key, assert_pda_owned, derive_vote_tally_pda},
         validation::{require_key_match, require_signer, require_writable},
@@ -275,25 +277,19 @@ pub fn process(
             return Err(Error::RevealMismatch.into());
         }
 
-        // Settlement entropy input is reveal-derived and batch/order independent.
-        let reveal_digest = compute_reveal_digest(&participant.wallet, plaintext);
+        let lucky_phrase = lucky_phrase_bytes(plaintext);
+        let reveal_digest = compute_reveal_digest(&participant.wallet, lucky_phrase);
         reveal_digests.push(reveal_digest);
 
         // Compute reveal_score from the lucky phrase component for transparency analytics.
         // This is informational only and never used for winner settlement entropy.
-        let sep = 0x1f;
-        let lw_bytes = if let Some(pos) = plaintext.iter().position(|&b| b == sep) {
-            &plaintext[..pos]
-        } else {
-            &plaintext[..]
-        };
-        let score: u64 = match core::str::from_utf8(lw_bytes) {
+        let score: u64 = match core::str::from_utf8(lucky_phrase) {
             Ok(s) => s.trim().to_ascii_lowercase().chars().count() as u64,
             Err(_) => {
                 let mut start = 0usize;
-                let mut end = lw_bytes.len();
+                let mut end = lucky_phrase.len();
                 while start < end {
-                    let b = lw_bytes[start];
+                    let b = lucky_phrase[start];
                     if b == b' ' || b == b'\t' || b == b'\n' || b == b'\r' {
                         start += 1;
                     } else {
@@ -301,7 +297,7 @@ pub fn process(
                     }
                 }
                 while end > start {
-                    let b = lw_bytes[end - 1];
+                    let b = lucky_phrase[end - 1];
                     if b == b' ' || b == b'\t' || b == b'\n' || b == b'\r' {
                         end -= 1;
                     } else {
@@ -364,6 +360,7 @@ pub fn process(
         authority: uploader_ai.key.to_string(),
         participants_count: lottery.provider_uploaded_count,
         aggregate_hash,
+        rule_version: WINNER_ALGO_RULE_VERSION.to_string(),
         selected_number_of_winners: lottery.selected_number_of_winners,
         timestamp: current_time,
     };
@@ -382,19 +379,19 @@ mod tests {
     #[test]
     fn reveal_digest_is_deterministic() {
         let wallet = Pubkey::new_unique();
-        let plaintext = b"cool\x1f0123";
+        let plaintext = b"cool";
         let d1 = compute_reveal_digest(&wallet, plaintext);
         let d2 = compute_reveal_digest(&wallet, plaintext);
         assert_eq!(d1, d2);
     }
 
     #[test]
-    fn reveal_digest_changes_with_wallet_or_plaintext() {
+    fn reveal_digest_changes_with_wallet_or_phrase() {
         let wallet_a = Pubkey::new_unique();
         let wallet_b = Pubkey::new_unique();
-        let d1 = compute_reveal_digest(&wallet_a, b"hello\x1fabcd");
-        let d2 = compute_reveal_digest(&wallet_a, b"hello!\x1fabcd");
-        let d3 = compute_reveal_digest(&wallet_b, b"hello\x1fabcd");
+        let d1 = compute_reveal_digest(&wallet_a, b"hello");
+        let d2 = compute_reveal_digest(&wallet_a, b"hello!");
+        let d3 = compute_reveal_digest(&wallet_b, b"hello");
         assert_ne!(d1, d2);
         assert_ne!(d1, d3);
     }
@@ -403,8 +400,8 @@ mod tests {
     fn xor_accumulator_is_order_independent() {
         let wallet_a = Pubkey::new_unique();
         let wallet_b = Pubkey::new_unique();
-        let d1 = compute_reveal_digest(&wallet_a, b"one\x1faaaa");
-        let d2 = compute_reveal_digest(&wallet_b, b"two\x1fbbbb");
+        let d1 = compute_reveal_digest(&wallet_a, b"one");
+        let d2 = compute_reveal_digest(&wallet_b, b"two");
         let left = xor_reveal_digests([0u8; 32], &[d1, d2]);
         let right = xor_reveal_digests([0u8; 32], &[d2, d1]);
         assert_eq!(left, right);

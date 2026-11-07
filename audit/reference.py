@@ -3,12 +3,28 @@ import hashlib
 from common import Incomplete, ZERO, pubkey
 
 
+SELECTION_RULES = {
+    'daily': ('reveal-plaintext-draw-v6-indexed', 'lucky-phrase-draw-v1-indexed'),
+    'giveaway': ('giveaway-poc-indexed-radix-v4-archival', 'giveaway-lucky-phrase-v1-indexed-radix'),
+}
+
+
 def sha(data):
     return hashlib.sha256(data).digest()
 
 
 def le(value, size=8):
     return value.to_bytes(size, 'little')
+
+
+def reveal_digest(domain, wallet, plaintext, phrase_only):
+    if phrase_only:
+        prefix = b'IKIGAI_RPD_V1_LUCKY_PHRASE' if domain == 'daily' else b'GIVEAWAY_LUCKY_PHRASE_V1'
+        payload = plaintext.partition(b'\x1f')[0]
+    else:
+        prefix = b'IKIGAI_RPD_V2_REVEAL' if domain == 'daily' else b'GIVEAWAY_REVEAL_V1'
+        payload = plaintext
+    return sha(prefix + pubkey(wallet) + le(len(payload), 4) + payload)
 
 
 def aggregate(participants):

@@ -20,6 +20,10 @@ pub fn build_reveal_plaintext(lucky_words: &str, salt: &[u8]) -> Result<Vec<u8>>
         lucky_words.len() <= MAX_LUCKY_WORDS_LEN && salt.len() <= MAX_SALT_LEN,
         GiveawayError::TextTooLong
     );
+    require!(
+        !lucky_words.as_bytes().contains(&REVEAL_SEPARATOR),
+        GiveawayError::InvalidReveal
+    );
 
     let mut plaintext = Vec::with_capacity(lucky_words.len() + 1 + salt.len());
     plaintext.extend_from_slice(lucky_words.as_bytes());
@@ -35,14 +39,13 @@ pub fn verify_reveal(commitment_hash: &[u8; 32], lucky_words: &str, salt: &[u8])
     Ok(computed_hash == *commitment_hash)
 }
 
-/// Domain-separated digest for one reveal. This is the entropy input, not the
-/// bare commitment hash.
-pub fn compute_reveal_digest(wallet: &Pubkey, plaintext: &[u8]) -> [u8; 32] {
+/// Draw contribution from the verified lucky phrase and wallet.
+pub fn compute_reveal_digest(wallet: &Pubkey, lucky_phrase: &str) -> [u8; 32] {
     let mut hasher = Sha256::new();
-    hasher.update(GIVEAWAY_REVEAL_DOMAIN_V1);
+    hasher.update(GIVEAWAY_LUCKY_PHRASE_DOMAIN_V1);
     hasher.update(wallet.to_bytes());
-    hasher.update((plaintext.len() as u32).to_le_bytes());
-    hasher.update(plaintext);
+    hasher.update((lucky_phrase.len() as u32).to_le_bytes());
+    hasher.update(lucky_phrase.as_bytes());
     hasher.finalize().into()
 }
 
@@ -298,14 +301,17 @@ mod tests {
 
         let commitment: [u8; 32] = Sha256::digest(&plaintext).into();
         assert!(verify_reveal(&commitment, lucky_words, salt).unwrap());
+        assert!(!verify_reveal(&commitment, lucky_words, b"abc124").unwrap());
+        assert!(build_reveal_plaintext("fortune\x1fabc", b"123").is_err());
+        assert!(build_reveal_plaintext(lucky_words, b"abc\x1f123").is_ok());
     }
 
     #[test]
     fn reveal_digest_aggregate_is_order_independent() {
         let wallet_a = Pubkey::new_unique();
         let wallet_b = Pubkey::new_unique();
-        let digest_a = compute_reveal_digest(&wallet_a, b"one\x1fa");
-        let digest_b = compute_reveal_digest(&wallet_b, b"two\x1fb");
+        let digest_a = compute_reveal_digest(&wallet_a, "one");
+        let digest_b = compute_reveal_digest(&wallet_b, "two");
 
         assert_eq!(
             xor_reveal_digests([0u8; 32], &[digest_a, digest_b]),

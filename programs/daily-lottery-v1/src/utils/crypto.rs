@@ -7,10 +7,8 @@ use sha2::{Digest, Sha256};
 use solana_program::pubkey::Pubkey;
 use solana_sha256_hasher::hashv;
 
-const RPD_V2_REVEAL_DOMAIN: &[u8] = &[
-    0x49, 0x4b, 0x49, 0x47, 0x41, 0x49, 0x5f, 0x52, 0x50, 0x44, 0x5f, 0x56, 0x32, 0x5f, 0x52, 0x45,
-    0x56, 0x45, 0x41, 0x4c,
-];
+const LUCKY_PHRASE_DOMAIN: &[u8] = b"IKIGAI_RPD_V1_LUCKY_PHRASE";
+pub const WINNER_ALGO_RULE_VERSION: &str = "lucky-phrase-draw-v1-indexed";
 
 /// Aggregates multiple hashes into a single deterministic hash
 ///
@@ -43,14 +41,24 @@ pub fn aggregate_hashes(inputs: &[[u8; 32]]) -> [u8; 32] {
     output
 }
 
-/// Computes the deterministic reveal digest included in settlement entropy.
-pub fn compute_reveal_digest(wallet: &Pubkey, plaintext: &[u8]) -> [u8; 32] {
-    let plaintext_len_le = (plaintext.len() as u32).to_le_bytes();
+/// V1 plaintext is phrase || 0x1f || salt. Earlier bare-phrase inputs still
+/// reveal as the whole phrase. The first separator owns the split, even if
+/// the salt contains more separator bytes.
+pub fn lucky_phrase_bytes(plaintext: &[u8]) -> &[u8] {
+    plaintext
+        .split(|byte| *byte == 0x1f)
+        .next()
+        .unwrap_or_default()
+}
+
+/// Computes the draw contribution from the verified phrase and wallet.
+pub fn compute_reveal_digest(wallet: &Pubkey, lucky_phrase: &[u8]) -> [u8; 32] {
+    let phrase_len_le = (lucky_phrase.len() as u32).to_le_bytes();
     hashv(&[
-        RPD_V2_REVEAL_DOMAIN,
+        LUCKY_PHRASE_DOMAIN,
         &wallet.to_bytes(),
-        &plaintext_len_le,
-        plaintext,
+        &phrase_len_le,
+        lucky_phrase,
     ])
     .to_bytes()
 }
@@ -170,21 +178,25 @@ mod tests {
     }
 
     #[test]
-    fn reveal_digest_is_deterministic() {
+    fn salt_changes_commitment_but_not_draw_contribution() {
         let wallet = Pubkey::new_unique();
-        let plaintext = b"cool\x1f0123";
-        let d1 = compute_reveal_digest(&wallet, plaintext);
-        let d2 = compute_reveal_digest(&wallet, plaintext);
+        let first = b"cool\x1f0123";
+        let second = b"cool\x1f45\x1f6789";
+        assert_ne!(hashv(&[first]), hashv(&[second]));
+        assert_eq!(lucky_phrase_bytes(first), b"cool");
+        let d1 = compute_reveal_digest(&wallet, lucky_phrase_bytes(first));
+        let d2 = compute_reveal_digest(&wallet, lucky_phrase_bytes(second));
         assert_eq!(d1, d2);
+        assert_eq!(lucky_phrase_bytes(b"cool"), b"cool");
     }
 
     #[test]
-    fn reveal_digest_changes_with_wallet_or_plaintext() {
+    fn reveal_digest_changes_with_wallet_or_phrase() {
         let wallet_a = Pubkey::new_unique();
         let wallet_b = Pubkey::new_unique();
-        let d1 = compute_reveal_digest(&wallet_a, b"hello\x1fabcd");
-        let d2 = compute_reveal_digest(&wallet_a, b"hello!\x1fabcd");
-        let d3 = compute_reveal_digest(&wallet_b, b"hello\x1fabcd");
+        let d1 = compute_reveal_digest(&wallet_a, b"hello");
+        let d2 = compute_reveal_digest(&wallet_a, b"hello!");
+        let d3 = compute_reveal_digest(&wallet_b, b"hello");
         assert_ne!(d1, d2);
         assert_ne!(d1, d3);
     }
@@ -193,8 +205,8 @@ mod tests {
     fn xor_reveal_digest_is_order_independent() {
         let wallet_a = Pubkey::new_unique();
         let wallet_b = Pubkey::new_unique();
-        let d1 = compute_reveal_digest(&wallet_a, b"one\x1faaaa");
-        let d2 = compute_reveal_digest(&wallet_b, b"two\x1fbbbb");
+        let d1 = compute_reveal_digest(&wallet_a, b"one");
+        let d2 = compute_reveal_digest(&wallet_b, b"two");
         let left = xor_reveal_digests([0u8; 32], &[d1, d2]);
         let right = xor_reveal_digests([0u8; 32], &[d2, d1]);
         assert_eq!(left, right);

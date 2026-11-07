@@ -10,6 +10,7 @@ use crate::{
     },
     utils::{
         account::{read_account_data, write_account_data},
+        crypto::WINNER_ALGO_RULE_VERSION,
         pda::{
             assert_pda_key, assert_pda_owned, derive_finalization_ledger_pda,
             derive_participant_pda, derive_winner_page_pda,
@@ -30,7 +31,6 @@ use solana_program::{
 use solana_system_interface::{instruction as system_instruction, program as system_program};
 use std::fmt::Write as _;
 
-pub const WINNER_ALGO_RULE_VERSION: &str = "reveal-plaintext-draw-v6-indexed";
 const RPD_POOL_DOMAIN: &[u8] = b"IKIGAI_RPD_V3_POOL";
 const RPD_SEED_DOMAIN: &[u8] = b"IKIGAI_RPD_V3_SEED";
 const RPD_DRAW_DOMAIN: &[u8] = b"IKIGAI_RPD_V3_DRAW";

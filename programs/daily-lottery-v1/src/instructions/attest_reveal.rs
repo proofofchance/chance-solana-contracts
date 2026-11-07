@@ -10,7 +10,9 @@ use crate::{
     state::{Config, Lottery, Participant, VoteTally},
     utils::{
         account::{read_account_data, write_account_data},
-        crypto::{compute_reveal_digest, xor_reveal_digests},
+        crypto::{
+            compute_reveal_digest, lucky_phrase_bytes, xor_reveal_digests, WINNER_ALGO_RULE_VERSION,
+        },
         limits::MAX_REVEAL_PLAINTEXT_BYTES,
         pda::{assert_pda_key, assert_pda_owned, derive_vote_tally_pda},
         validation::{require_key_match, require_signer, require_writable},
@@ -120,7 +122,7 @@ pub fn process(
         return Err(Error::RevealMismatch.into());
     }
 
-    let reveal_digest = compute_reveal_digest(wallet_ai.key, &reveal_plaintext);
+    let reveal_digest = compute_reveal_digest(wallet_ai.key, lucky_phrase_bytes(&reveal_plaintext));
     let aggregate_hash = xor_reveal_digests(lottery.poc_aggregate_hash, &[reveal_digest]);
 
     participant.set_vote_number_of_winners(voted_number_of_winners)?;
@@ -220,6 +222,7 @@ pub fn process(
         authority: wallet_ai.key.to_string(),
         participants_count: lottery.provider_uploaded_count,
         aggregate_hash,
+        rule_version: WINNER_ALGO_RULE_VERSION.to_string(),
         selected_number_of_winners: lottery.selected_number_of_winners,
         timestamp: current_time,
     }

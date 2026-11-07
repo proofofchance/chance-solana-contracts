@@ -33,6 +33,8 @@ Participation, attestation, exclusions and full reveal bytes are reconstructed f
 
 Lottery draws use an independent cumulative-weight calculation. Giveaway ranking uses a full sort and threshold calculation instead of the on-chain radix passes. Their inputs include the ordered eligible population and reveal aggregate. Payouts are checked against actual recipient/vault balance changes, accounting for the transaction fee. Creation-state hashes are reconstructed from the original zeroed lifecycle fields and frozen parameters; hashing today's entire mutable instance account would be wrong.
 
+Replay reads the winner rule from the program-authenticated `RevealsUploaded` event and checks it against `WinnersComputed`. Historical reveal events without a rule field use the original full-plaintext calculation. The V1 lucky-phrase rule verifies the same entry commitment and derives the draw contribution from the phrase and wallet. Unknown rule identifiers are reported as incomplete evidence.
+
 `eventReplay` is separate from `buildMatch` and `securityReview`. Event completion and financial closure have separate fields. Unpaid principal stays an obligation after selection, and no report treats a source hash or Merkle membership alone as an exhaustive audit. The verifier currently supports a single top-level instance instruction per transaction. Bundled/CPI instance calls, arbitrary extra transfers and other unsupported historical evidence must be reported explicitly, never silently skipped. Participant snapshot reconciliation and broader archival/provider compatibility remain acceptance work.
 
 Exit codes: replay `0` for its bounded observed-execution checks, `1` for contradictory evidence and `2` for incomplete/unsupported evidence. Inspection returns `2` even when ownership/build checks pass because event replay and security review are separate. Reports never claim absence of vulnerabilities or resistance to selective disclosure, biased participation or provider influence.
@@ -49,6 +51,8 @@ CHANCE_AUDIT_FIXTURE=/tmp/giveaway-audit.json CHANCE_DAILY_AUDIT_FIXTURE=/tmp/da
 ```
 
 These fixtures represent an isolated LiteSVM bank; its RPC transport/block identity is test data, not a deployed network. CI creates them from the exact reproducibly built binaries and exercises both positive replay and tampered/missing evidence. No test fixtures populate product surfaces. Network archival verification and public publication remain distinct gates.
+
+Set `SBF_OUT_DIR` to run the registry lifecycle fixtures against a separate directory containing all three local SBF binaries.
 
 Unrecognized instance events return incomplete; frozen-window mutations fail. Selection and payout checks are reported only when those actions occurred. Participant account cleanup is currently unsupported rather than silently omitted.
 
