@@ -57,3 +57,41 @@ Set `SBF_OUT_DIR` to run the registry lifecycle fixtures against a separate dire
 Unrecognized instance events return incomplete; frozen-window mutations fail. Selection and payout checks are reported only when those actions occurred. Participant account cleanup is currently unsupported rather than silently omitted.
 
 Completeness checks compare successful instance transactions in every fetched canonical block against RPC signature pagination. A missing signature in a fetched block is incomplete evidence. This does not establish completeness for a whole block omitted by the RPC. Daily payout reconciliation compares exact winner bitmap positions, not merely the number of set bits.
+
+## V1 brand-review schema
+
+The successor has a separate instruction/account IDL in
+`schemas/giveaways-brand-review-v1.idl.json`. Generate it with:
+
+```sh
+cargo run --locked --manifest-path tools/idl-export/Cargo.toml -- --brand-review-v1
+```
+
+`schemas/giveaway-brand-review-v1.json` contains independent normalized-history golden vectors;
+it is not the IDL. `brand_review_reference.py` replays those explicit histories and proves
+consistency with final discretionary brand decisions, fixed candidate order and
+accounting. It does not certify the truth of a social action.
+
+The successor LiteSVM suite can export actual loaded ELF and raw account bytes
+for independent validation:
+
+```sh
+CHANCE_GIVEAWAY_BRAND_REVIEW_ELF=/absolute/path/giveaways.so CHANCE_GIVEAWAY_BRAND_REVIEW_CAPTURE=/tmp/giveaway-brand-review-v1-capture.json cargo test --locked --manifest-path programs/registry/Cargo.toml --test giveaway_brand_review -- --ignored
+CHANCE_GIVEAWAY_BRAND_REVIEW_CAPTURE=/tmp/giveaway-brand-review-v1-capture.json python3 -m unittest discover -s audit/tests -v
+```
+
+Requesting a capture test with an explicit missing fixture must fail; no fixture
+environment means the actual-capture tests are skipped. CI supplies the path
+during actual reproduced-ELF execution and again during tamper-test validation.
+Keep generated capture/ELF output outside tracked source. Synthetic normalized
+histories remain confined to audit tests and never populate product surfaces.
+
+`brand_review_capture.py` uses the successor IDL and explicit program/network/source
+bindings to inspect captured state and retained decision records. Its
+report's limitations remain part of the result: an isolated LiteSVM capture is
+not a deployed network or a consensus proof, an account snapshot alone cannot
+prove complete historical execution, and brand approval establishes no external
+task truth. Historical signer execution, reveal preimages and actual recipient
+transfers require separate transaction replay. An unapproved canonical winner-slot placeholder can have zero binding
+fields and must not be treated as a vested award. RPC archival completeness,
+independent reproducibility and release approval remain separate checks.

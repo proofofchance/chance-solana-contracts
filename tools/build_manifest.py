@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--library',required=True,choices=PROGRAMS)
     parser.add_argument('--elf',required=True,type=Path)
     parser.add_argument('--output',required=True,type=Path)
-    parser.add_argument('--features', choices=['devnet-v1'])
+    parser.add_argument('--features', choices=['devnet-v1', 'brand-review'])
     args=parser.parse_args()
     if args.features and args.library != 'giveaways':
         parser.error('The release feature is qualified only for giveaways')
@@ -47,6 +47,9 @@ def main():
               'executableSha256':hashlib.sha256(args.elf.read_bytes().rstrip(b'\0')).hexdigest(),
               'elfFileSha256':hashlib.sha256(args.elf.read_bytes()).hexdigest(),
               'deployment':None,'status':'build record only; no deployed match or security approval'}
+    if args.features == 'brand-review':
+        manifest['releaseQualification'] = {'status': 'development-only', 'productionApproved': False,
+                                            'stagingOperationsSupported': False}
     args.output.write_text(json.dumps(manifest,indent=2)+'\n')
     print(json.dumps({'output':str(args.output),'sourceReferenceSha256':manifest['sourceReferenceSha256']}))
 

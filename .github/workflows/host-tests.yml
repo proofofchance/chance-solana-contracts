@@ -18,6 +18,8 @@ jobs:
       - run: rustup toolchain install 1.89.0 --profile minimal
       - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
       - run: cargo test --locked --lib --manifest-path programs/${{ matrix.program }}/Cargo.toml
+      - if: matrix.program == 'giveaways-v1'
+        run: cargo test --locked --lib --manifest-path programs/giveaways-v1/Cargo.toml --features brand-review
 
   consumer-artifacts:
     runs-on: ubuntu-latest
@@ -27,5 +29,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
       - run: python3 tools/export_schemas.py
       - run: cargo run --locked --manifest-path tools/idl-export/Cargo.toml
+      - run: cargo run --locked --manifest-path tools/idl-export/Cargo.toml -- --brand-review-v1
       - run: git diff --exit-code -- audit/schemas/
       - run: python3 -m unittest discover -s audit/tests -v
+      - run: python3 -m unittest discover -s tools -p 'test_brand_review.py' -v

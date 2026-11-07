@@ -1,0 +1,2764 @@
+{
+  "address": "EahQmXc3rwhY3CH1g3ZgUx8L4vHTNmzpK1xtiQ1RAxq6",
+  "metadata": {
+    "name": "giveaways",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "ProofOfChance Giveaways Program - Transparent brand giveaways with proof-of-chance winner selection",
+    "repository": "https://github.com/proofofchance/proofofchance"
+  },
+  "instructions": [
+    {
+      "name": "append_task",
+      "discriminator": [
+        86,
+        84,
+        185,
+        4,
+        247,
+        85,
+        5,
+        177
+      ],
+      "accounts": [
+        {
+          "name": "rulebook",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  117,
+                  108,
+                  101,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "account",
+                "path": "rulebook.nonce",
+                "account": "Rulebook"
+              }
+            ]
+          }
+        },
+        {
+          "name": "task",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  97,
+                  115,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "rulebook"
+              },
+              {
+                "kind": "arg",
+                "path": "input.task_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "rulebook"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "input",
+          "type": {
+            "defined": {
+              "name": "TaskInput"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "attest_receipt",
+      "discriminator": [
+        117,
+        47,
+        120,
+        3,
+        108,
+        109,
+        8,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "instructions_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "begin_entry",
+      "discriminator": [
+        127,
+        59,
+        46,
+        160,
+        103,
+        144,
+        77,
+        39
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  114,
+                  116,
+                  105,
+                  99,
+                  105,
+                  112,
+                  97,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "commitment",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "begin_entry_seal",
+      "discriminator": [
+        44,
+        78,
+        119,
+        192,
+        38,
+        188,
+        76,
+        183
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "session",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  110,
+                  116,
+                  114,
+                  121,
+                  83,
+                  101,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "begin_pool",
+      "discriminator": [
+        222,
+        37,
+        178,
+        98,
+        226,
+        200,
+        15,
+        102
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "ranking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  97,
+                  110,
+                  107,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "giveaway"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "begin_rulebook",
+      "discriminator": [
+        160,
+        163,
+        155,
+        53,
+        121,
+        185,
+        63,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "rulebook",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  117,
+                  108,
+                  101,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "arg",
+                "path": "nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "task_count",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "bind_registry",
+      "discriminator": [
+        173,
+        242,
+        89,
+        1,
+        153,
+        173,
+        129,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "registry_program"
+        },
+        {
+          "name": "registry_config"
+        },
+        {
+          "name": "release"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_unbound_rulebook",
+      "discriminator": [
+        177,
+        154,
+        223,
+        204,
+        205,
+        97,
+        126,
+        137
+      ],
+      "accounts": [
+        {
+          "name": "rulebook",
+          "writable": true
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "rulebook"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "commit_outcome",
+      "discriminator": [
+        115,
+        42,
+        168,
+        106,
+        67,
+        119,
+        149,
+        127
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true
+        },
+        {
+          "name": "host",
+          "signer": true,
+          "relations": [
+            "giveaway"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_checked",
+      "discriminator": [
+        225,
+        249,
+        140,
+        96,
+        35,
+        128,
+        126,
+        191
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "rulebook",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  117,
+                  108,
+                  101,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "account",
+                "path": "rulebook.nonce",
+                "account": "Rulebook"
+              }
+            ]
+          }
+        },
+        {
+          "name": "giveaway",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  105,
+                  118,
+                  101,
+                  97,
+                  119,
+                  97,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "rulebook"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "registry_program"
+        },
+        {
+          "name": "registry_config",
+          "writable": true
+        },
+        {
+          "name": "release"
+        },
+        {
+          "name": "release_signer"
+        },
+        {
+          "name": "registry_entry",
+          "writable": true
+        },
+        {
+          "name": "business_key",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "terms",
+          "type": {
+            "defined": {
+              "name": "Terms"
+            }
+          }
+        },
+        {
+          "name": "expected_creation_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "finalize_refund",
+      "discriminator": [
+        162,
+        250,
+        120,
+        38,
+        182,
+        125,
+        91,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "finish_entry_seal",
+      "discriminator": [
+        58,
+        116,
+        37,
+        66,
+        29,
+        176,
+        168,
+        228
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "relations": [
+            "session"
+          ]
+        },
+        {
+          "name": "session",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  110,
+                  116,
+                  114,
+                  121,
+                  83,
+                  101,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet",
+          "signer": true,
+          "relations": [
+            "participant"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bootstrap",
+          "writable": true,
+          "signer": true,
+          "address": "Eechuq54TEzmBHXX7Ltbmpu6K5Vf3qgdsRdYmn41vJ9o"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "host",
+          "type": "pubkey"
+        },
+        {
+          "name": "fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "network_domain",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "next_wave",
+      "discriminator": [
+        230,
+        237,
+        59,
+        66,
+        201,
+        168,
+        25,
+        205
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "ranking"
+          ]
+        },
+        {
+          "name": "ranking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  97,
+                  110,
+                  107,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host",
+          "signer": true,
+          "relations": [
+            "giveaway"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "open_candidate",
+      "discriminator": [
+        224,
+        217,
+        151,
+        93,
+        31,
+        156,
+        115,
+        199
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "ranking",
+            "participant"
+          ]
+        },
+        {
+          "name": "ranking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  97,
+                  110,
+                  107,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant"
+        },
+        {
+          "name": "candidate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  110,
+                  100,
+                  105,
+                  100,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "arg",
+                "path": "ordinal"
+              }
+            ]
+          }
+        },
+        {
+          "name": "slot",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  105,
+                  110,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "giveaway.approved_count",
+                "account": "Giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "giveaway"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "ordinal",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "pay_beneficiaries",
+      "discriminator": [
+        187,
+        135,
+        139,
+        25,
+        245,
+        122,
+        232,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host",
+          "writable": true
+        },
+        {
+          "name": "creator",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "pay_winner",
+      "discriminator": [
+        95,
+        54,
+        215,
+        39,
+        87,
+        139,
+        215,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "vault",
+            "slot"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "slot",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  105,
+                  110,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "slot.slot",
+                "account": "WinnerSlot"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "process_entry_seal",
+      "discriminator": [
+        216,
+        196,
+        10,
+        186,
+        215,
+        234,
+        89,
+        168
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "relations": [
+            "session"
+          ]
+        },
+        {
+          "name": "session",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  110,
+                  116,
+                  114,
+                  121,
+                  83,
+                  101,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet",
+          "signer": true,
+          "relations": [
+            "participant"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "process_pool",
+      "discriminator": [
+        109,
+        126,
+        132,
+        219,
+        103,
+        24,
+        156,
+        0
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "ranking"
+          ]
+        },
+        {
+          "name": "ranking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  97,
+                  110,
+                  107,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host",
+          "signer": true,
+          "relations": [
+            "giveaway"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "process_wave",
+      "discriminator": [
+        60,
+        1,
+        237,
+        165,
+        230,
+        208,
+        9,
+        248
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "ranking"
+          ]
+        },
+        {
+          "name": "ranking",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  97,
+                  110,
+                  107,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "host",
+          "signer": true,
+          "relations": [
+            "giveaway"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "publish_evidence",
+      "discriminator": [
+        243,
+        125,
+        137,
+        196,
+        177,
+        55,
+        69,
+        203
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  114,
+                  116,
+                  105,
+                  99,
+                  105,
+                  112,
+                  97,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "task",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  97,
+                  115,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway.rulebook",
+                "account": "Giveaway"
+              },
+              {
+                "kind": "arg",
+                "path": "task_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "evidence",
+          "writable": true
+        },
+        {
+          "name": "wallet",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "task_id",
+          "type": "u16"
+        },
+        {
+          "name": "version",
+          "type": "u8"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "reveal",
+      "discriminator": [
+        9,
+        35,
+        59,
+        190,
+        167,
+        249,
+        76,
+        115
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "participant",
+          "writable": true
+        },
+        {
+          "name": "actor",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "lucky_phrase",
+          "type": "string"
+        },
+        {
+          "name": "salt",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "review_candidate",
+      "discriminator": [
+        189,
+        61,
+        214,
+        92,
+        206,
+        159,
+        113,
+        28
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "candidate"
+          ]
+        },
+        {
+          "name": "candidate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  110,
+                  100,
+                  105,
+                  100,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "candidate.ordinal",
+                "account": "Candidate"
+              }
+            ]
+          }
+        },
+        {
+          "name": "slot",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  105,
+                  110,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "candidate.slot",
+                "account": "Candidate"
+              }
+            ]
+          }
+        },
+        {
+          "name": "brand",
+          "signer": true,
+          "relations": [
+            "giveaway"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "approve",
+          "type": "bool"
+        },
+        {
+          "name": "reason",
+          "type": "u8"
+        },
+        {
+          "name": "note",
+          "type": "string"
+        },
+        {
+          "name": "task_mask",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "revise_commitment",
+      "discriminator": [
+        249,
+        140,
+        176,
+        43,
+        113,
+        126,
+        106,
+        177
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "participant"
+          ]
+        },
+        {
+          "name": "participant",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  114,
+                  116,
+                  105,
+                  99,
+                  105,
+                  112,
+                  97,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              },
+              {
+                "kind": "account",
+                "path": "wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet",
+          "signer": true,
+          "relations": [
+            "participant"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "commitment",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "seal_rulebook",
+      "discriminator": [
+        206,
+        128,
+        187,
+        174,
+        239,
+        158,
+        215,
+        15
+      ],
+      "accounts": [
+        {
+          "name": "rulebook",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  117,
+                  108,
+                  101,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "account",
+                "path": "rulebook.nonce",
+                "account": "Rulebook"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "signer": true,
+          "relations": [
+            "rulebook"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw_surplus",
+      "discriminator": [
+        150,
+        183,
+        243,
+        31,
+        213,
+        21,
+        79,
+        26
+      ],
+      "accounts": [
+        {
+          "name": "giveaway",
+          "writable": true,
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "giveaway"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Candidate",
+      "discriminator": [
+        86,
+        69,
+        250,
+        96,
+        193,
+        10,
+        222,
+        123
+      ]
+    },
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "Evidence",
+      "discriminator": [
+        160,
+        73,
+        93,
+        206,
+        99,
+        242,
+        62,
+        92
+      ]
+    },
+    {
+      "name": "Giveaway",
+      "discriminator": [
+        47,
+        139,
+        46,
+        45,
+        143,
+        147,
+        50,
+        181
+      ]
+    },
+    {
+      "name": "Participant",
+      "discriminator": [
+        32,
+        142,
+        108,
+        79,
+        247,
+        179,
+        54,
+        6
+      ]
+    },
+    {
+      "name": "Ranking",
+      "discriminator": [
+        102,
+        173,
+        167,
+        22,
+        253,
+        77,
+        223,
+        191
+      ]
+    },
+    {
+      "name": "Rulebook",
+      "discriminator": [
+        52,
+        178,
+        19,
+        148,
+        163,
+        83,
+        84,
+        225
+      ]
+    },
+    {
+      "name": "SealSession",
+      "discriminator": [
+        62,
+        129,
+        229,
+        221,
+        17,
+        245,
+        253,
+        251
+      ]
+    },
+    {
+      "name": "Task",
+      "discriminator": [
+        79,
+        34,
+        229,
+        55,
+        88,
+        90,
+        55,
+        84
+      ]
+    },
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    },
+    {
+      "name": "WinnerSlot",
+      "discriminator": [
+        70,
+        94,
+        9,
+        184,
+        146,
+        239,
+        152,
+        195
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "Audit",
+      "discriminator": [
+        76,
+        97,
+        42,
+        1,
+        114,
+        131,
+        249,
+        126
+      ]
+    },
+    {
+      "name": "BrandReviewRecord",
+      "discriminator": [
+        83,
+        1,
+        49,
+        96,
+        39,
+        8,
+        21,
+        49
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Account",
+      "msg": "Invalid account or canonical binding"
+    },
+    {
+      "code": 6001,
+      "name": "Unauthorized",
+      "msg": "Unauthorized role"
+    },
+    {
+      "code": 6002,
+      "name": "State",
+      "msg": "Invalid phase or immutable state"
+    },
+    {
+      "code": 6003,
+      "name": "Time",
+      "msg": "Deadline or entry window closed"
+    },
+    {
+      "code": 6004,
+      "name": "Limit",
+      "msg": "Invalid text, index, count or resource limit"
+    },
+    {
+      "code": 6005,
+      "name": "CreationMismatch",
+      "msg": "Checked creation terms changed"
+    },
+    {
+      "code": 6006,
+      "name": "Coverage",
+      "msg": "Incomplete, stale or out-of-order coverage"
+    },
+    {
+      "code": 6007,
+      "name": "Reveal",
+      "msg": "Invalid phrase reveal or receipt"
+    },
+    {
+      "code": 6008,
+      "name": "Funds",
+      "msg": "Accounting overflow or insufficient recognized funding"
+    }
+  ],
+  "types": [
+    {
+      "name": "Audit",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "instance",
+            "type": "pubkey"
+          },
+          {
+            "name": "actor",
+            "type": "pubkey"
+          },
+          {
+            "name": "sequence",
+            "type": "u64"
+          },
+          {
+            "name": "hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "value",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BrandReviewRecord",
+      "docs": [
+        "Complete bounded public records let finalized indexers rebuild without historical account RPC."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kind",
+            "type": "u8"
+          },
+          {
+            "name": "address",
+            "type": "pubkey"
+          },
+          {
+            "name": "data",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Candidate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "pubkey"
+          },
+          {
+            "name": "ordinal",
+            "type": "u64"
+          },
+          {
+            "name": "key",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "entry_revision",
+            "type": "u32"
+          },
+          {
+            "name": "evidence_root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "slot",
+            "type": "u32"
+          },
+          {
+            "name": "opened_at",
+            "type": "i64"
+          },
+          {
+            "name": "deadline",
+            "type": "i64"
+          },
+          {
+            "name": "verdict",
+            "type": "u8"
+          },
+          {
+            "name": "reason",
+            "type": "u8"
+          },
+          {
+            "name": "note",
+            "type": "string"
+          },
+          {
+            "name": "task_mask",
+            "type": "u32"
+          },
+          {
+            "name": "decided_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "network_domain",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "next_giveaway_id",
+            "type": "u64"
+          },
+          {
+            "name": "registry_program",
+            "type": "pubkey"
+          },
+          {
+            "name": "registry_config",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Evidence",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "participant",
+            "type": "pubkey"
+          },
+          {
+            "name": "task_id",
+            "type": "u16"
+          },
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "text",
+            "type": "string"
+          },
+          {
+            "name": "hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "published_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Giveaway",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "rulebook",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "brand",
+            "type": "pubkey"
+          },
+          {
+            "name": "host",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "rules_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "network_domain",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "task_root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "task_count",
+            "type": "u16"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "terms",
+            "type": {
+              "defined": {
+                "name": "Terms"
+              }
+            }
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "registered_count",
+            "type": "u64"
+          },
+          {
+            "name": "sealed_count",
+            "type": "u64"
+          },
+          {
+            "name": "attested_count",
+            "type": "u64"
+          },
+          {
+            "name": "included_count",
+            "type": "u64"
+          },
+          {
+            "name": "aggregate",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "base_pool_count",
+            "type": "u64"
+          },
+          {
+            "name": "pool_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "seed",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "consumed_count",
+            "type": "u64"
+          },
+          {
+            "name": "approved_count",
+            "type": "u32"
+          },
+          {
+            "name": "accepted_root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pending",
+            "type": "bool"
+          },
+          {
+            "name": "pending_deadline",
+            "type": "i64"
+          },
+          {
+            "name": "per_winner",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "remainder",
+            "type": "u64"
+          },
+          {
+            "name": "outcome_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "paid_winners",
+            "type": "u32"
+          },
+          {
+            "name": "fee_paid",
+            "type": "bool"
+          },
+          {
+            "name": "remainder_paid",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Participant",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "index",
+            "type": "u64"
+          },
+          {
+            "name": "commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "revision",
+            "type": "u32"
+          },
+          {
+            "name": "versions",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "lengths",
+            "type": {
+              "array": [
+                "u16",
+                32
+              ]
+            }
+          },
+          {
+            "name": "current_bytes",
+            "type": "u32"
+          },
+          {
+            "name": "sealed",
+            "type": "bool"
+          },
+          {
+            "name": "sealed_revision",
+            "type": "u32"
+          },
+          {
+            "name": "evidence_root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "attested",
+            "type": "bool"
+          },
+          {
+            "name": "revealed",
+            "type": "bool"
+          },
+          {
+            "name": "contribution",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ranking",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "pubkey"
+          },
+          {
+            "name": "phase",
+            "type": "u8"
+          },
+          {
+            "name": "cursor",
+            "type": "u64"
+          },
+          {
+            "name": "wave",
+            "type": "u32"
+          },
+          {
+            "name": "frontier",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "has_frontier",
+            "type": "bool"
+          },
+          {
+            "name": "remaining",
+            "type": "u64"
+          },
+          {
+            "name": "keys",
+            "type": {
+              "vec": {
+                "array": [
+                  "u8",
+                  64
+                ]
+              }
+            }
+          },
+          {
+            "name": "next_key",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Rulebook",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "task_count",
+            "type": "u16"
+          },
+          {
+            "name": "appended",
+            "type": "u16"
+          },
+          {
+            "name": "total_bytes",
+            "type": "u32"
+          },
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "sealed",
+            "type": "bool"
+          },
+          {
+            "name": "instance",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SealSession",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "participant",
+            "type": "pubkey"
+          },
+          {
+            "name": "revision",
+            "type": "u32"
+          },
+          {
+            "name": "cursor",
+            "type": "u16"
+          },
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "total_bytes",
+            "type": "u32"
+          },
+          {
+            "name": "active",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Task",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rulebook",
+            "type": "pubkey"
+          },
+          {
+            "name": "input",
+            "type": {
+              "defined": {
+                "name": "TaskInput"
+              }
+            }
+          },
+          {
+            "name": "hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TaskInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "task_id",
+            "type": "u16"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "instructions",
+            "type": "string"
+          },
+          {
+            "name": "target_uri",
+            "type": "string"
+          },
+          {
+            "name": "evidence_prompt",
+            "type": "string"
+          },
+          {
+            "name": "max_evidence_bytes",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Terms",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "funding",
+            "type": "u64"
+          },
+          {
+            "name": "winners",
+            "type": "u32"
+          },
+          {
+            "name": "entry_start",
+            "type": "i64"
+          },
+          {
+            "name": "entry_end",
+            "type": "i64"
+          },
+          {
+            "name": "upload_end",
+            "type": "i64"
+          },
+          {
+            "name": "remediation_end",
+            "type": "i64"
+          },
+          {
+            "name": "opening_cutoff",
+            "type": "i64"
+          },
+          {
+            "name": "absolute_deadline",
+            "type": "i64"
+          },
+          {
+            "name": "review_seconds",
+            "type": "u32"
+          },
+          {
+            "name": "finalization_reserve_seconds",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WinnerSlot",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "giveaway",
+            "type": "pubkey"
+          },
+          {
+            "name": "slot",
+            "type": "u32"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "ordinal",
+            "type": "u64"
+          },
+          {
+            "name": "revision",
+            "type": "u32"
+          },
+          {
+            "name": "evidence_root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "approved",
+            "type": "bool"
+          },
+          {
+            "name": "paid",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ]
+}

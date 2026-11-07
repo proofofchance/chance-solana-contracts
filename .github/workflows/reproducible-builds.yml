@@ -3,6 +3,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -12,7 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        library: [daily_lottery, giveaways, chance_registry]
+        include:
+          - library: daily_lottery
+          - library: giveaways
+          - library: chance_registry
+          - library: giveaways
+            features: brand-review
+            artifact: giveaways-brand-review-v1
     env:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
       BUILD_IMAGE: solanafoundation/solana-verifiable-build@sha256:ff3b148fb6adc3025c46ac38f132f473ccbdc4391f253234d98aa6519aec07f8
@@ -29,21 +36,24 @@ jobs:
       - name: Build two clean trees of the exact candidate commit
         run: |
           git worktree add --detach "$RUNNER_TEMP/second-build" HEAD
-          "$RUNNER_TEMP/solana-verify" build --library-name '${{ matrix.library }}' --base-image "$BUILD_IMAGE" "$GITHUB_WORKSPACE" -- -Znext-lockfile-bump
-          "$RUNNER_TEMP/solana-verify" build --library-name '${{ matrix.library }}' --base-image "$BUILD_IMAGE" "$RUNNER_TEMP/second-build" -- -Znext-lockfile-bump
+          "$RUNNER_TEMP/solana-verify" build --library-name '${{ matrix.library }}' --base-image "$BUILD_IMAGE" "$GITHUB_WORKSPACE" -- -Znext-lockfile-bump ${{ matrix.features && format('--features {0}', matrix.features) || '' }}
+          "$RUNNER_TEMP/solana-verify" build --library-name '${{ matrix.library }}' --base-image "$BUILD_IMAGE" "$RUNNER_TEMP/second-build" -- -Znext-lockfile-bump ${{ matrix.features && format('--features {0}', matrix.features) || '' }}
           cmp "target/deploy/${{ matrix.library }}.so" "$RUNNER_TEMP/second-build/target/deploy/${{ matrix.library }}.so"
           mkdir -p releases/ci
-          sha256sum "target/deploy/${{ matrix.library }}.so" > 'releases/ci/${{ matrix.library }}.sha256'
+          sha256sum "target/deploy/${{ matrix.library }}.so" > 'releases/ci/${{ matrix.artifact || matrix.library }}.sha256'
           git rev-parse HEAD > releases/ci/commit.txt
           printf '%s\n' "$BUILD_IMAGE" > releases/ci/build-image.txt
       - name: Record public source and executable manifest
         run: |
-          python3 tools/build_manifest.py --repository "https://github.com/$GITHUB_REPOSITORY" --commit "$(git rev-parse HEAD)" --library '${{ matrix.library }}' --elf 'target/deploy/${{ matrix.library }}.so' --output 'releases/ci/${{ matrix.library }}.manifest.json'
+          python3 tools/build_manifest.py --repository "https://github.com/$GITHUB_REPOSITORY" --commit "$(git rev-parse HEAD)" --library '${{ matrix.library }}' --elf 'target/deploy/${{ matrix.library }}.so' --output 'releases/ci/${{ matrix.artifact || matrix.library }}.manifest.json' ${{ matrix.features && format('--features {0}', matrix.features) || '' }}
+      - name: Keep feature ELF isolated
+        if: matrix.features == 'brand-review'
+        run: mv target/deploy/giveaways.so target/deploy/giveaways-brand-review-v1.so
       - uses: actions/upload-artifact@v4
         with:
-          name: reproducible-${{ matrix.library }}
+          name: reproducible-${{ matrix.artifact || matrix.library }}
           path: |
-            target/deploy/${{ matrix.library }}.so
+            target/deploy/${{ matrix.artifact || matrix.library }}.so
             releases/ci/
 
   runtime-tests:
@@ -76,3 +86,15 @@ jobs:
           git diff --exit-code -- audit/schemas/accounts-v1.json
           python3 -m unittest discover -s audit/tests -v
       - run: cargo test --locked --lib --manifest-path programs/giveaways-v1/Cargo.toml
+      - name: Execute V1 brand review against the actual reproduced ELF
+        env:
+          CHANCE_GIVEAWAY_BRAND_REVIEW_ELF: ${{ github.workspace }}/target/deploy/giveaways-brand-review-v1.so
+          CHANCE_GIVEAWAY_BRAND_REVIEW_CAPTURE: ${{ runner.temp }}/giveaway-brand-review-v1-capture.json
+        run: cargo test --locked --manifest-path programs/registry/Cargo.toml --test giveaway_brand_review -- --ignored
+      - name: Verify V1 brand review execution capture and reject tampering
+        env:
+          CHANCE_GIVEAWAY_BRAND_REVIEW_CAPTURE: ${{ runner.temp }}/giveaway-brand-review-v1-capture.json
+        run: |
+          test -s "$CHANCE_GIVEAWAY_BRAND_REVIEW_CAPTURE"
+          python3 audit/brand_review_capture.py --snapshot "$CHANCE_GIVEAWAY_BRAND_REVIEW_CAPTURE" --isolated-runtime-fixture
+          python3 -m unittest discover -s audit/tests -v

@@ -35,3 +35,32 @@ not live deployments or release approval.
 This is a development candidate. It has not been deployed or activated. Existing program IDs in source are development inputs, not authorization to replace a deployed program. A network release needs fresh IDs, exact public source/build records, reviewed authority/configuration and a separate activation decision. Reproducibility and automated tests do not constitute a security audit.
 
 Historical source commits remain in this repository's Git history. Consolidated source is promoted as new public commits; no private Git history is merged. Public commits and GitHub write actions use Plexer44. Operational credentials and keypairs do not belong here.
+
+## V1 tasks and final brand review
+
+The `brand-review` feature in `programs/giveaways-v1` adds immutable required
+tasks, complete public per-task evidence and final brand approve/reject decisions.
+`staging-afresh-v1` selects this schema for a fresh epoch. The original default and
+devnet schemas retain their separate bindings; existing deployed programs remain
+immutable. The contract version remains 1. The generated
+[brand-review IDL](audit/schemas/giveaways-brand-review-v1.idl.json) names every
+instruction and account; [audit tools](audit/README.md) cover independent hashes
+and actual-runtime capture validation.
+
+The brand seals 1–32 tasks before funding. Participants publish every required
+response and seal their current revision before entry close, then reveal during
+the finalized upload phase. The host commits a fixed pool and ranking. Each final
+brand rejection consumes the next ranked candidate; the brand cannot select a
+wallet or regenerate randomness. Approvals vest together. Exhaustion with some
+approvals shares the net pool among them; zero approvals or unresolved expiry
+refunds the pool without fees. Vested awards remain claimable. Public text and
+a brand decision do not independently establish an external social action.
+
+Bounds are 256 bytes per response, four retained versions per task, 8,192 current
+evidence bytes, 4,096 admitted participants and 1,000 winner slots. Pool/wave
+scans process four accounts at a time, ranking waves retain 32 keys, and seal
+chunks process eight tasks. Repeated scans have quadratic worst-case total work.
+Native development execution, public CI reproducibility, a security audit and a
+qualified environment release are distinct claims. This source update deploys
+and activates nothing. Fixed hash-domain suffixes retain encoding identifiers;
+they do not define the product version.

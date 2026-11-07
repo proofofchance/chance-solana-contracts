@@ -1,0 +1,1329 @@
+{
+  "schema": "giveaway-contract-conformance-v2",
+  "status": "offline-reference-vectors; native hash encodings require contract-test consumption",
+  "guarantee": "Consistency with frozen tasks, complete public submissions, deterministic rank and final brand decisions; no certification of off-chain task truth.",
+  "limits": {
+    "tasks": 32,
+    "title": 64,
+    "instructions": 256,
+    "target_uri": 128,
+    "evidence_prompt": 128,
+    "evidence": 256,
+    "versions": 4,
+    "current_evidence": 8192,
+    "participants": 4096,
+    "winners": 1000
+  },
+  "hash_vectors": [
+    {
+      "profile": {
+        "family": "solana",
+        "instance": "00000000000000000000000000000000000000000000000000000000000003e8",
+        "chain_id": 31337,
+        "giveaway_id": 7
+      },
+      "task": {
+        "task_id": 0,
+        "title": "Follow",
+        "instructions": "Follow the published brand account.",
+        "target_uri": "https://example.invalid/brand",
+        "evidence_prompt": "Public account identifier",
+        "max_evidence_bytes": 256
+      },
+      "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+      "task_hash": "cec7b5be6ace07b86bdbd648b5acd0eea2993b51db047926c4dfaa45f3d2183d",
+      "task_root": "e00cd874684633e78502c8c663e301c78fe9257bee48374ce4c9f30dea2508cb",
+      "evidence_hash": "8a96a28f7d777d8a23f1636aec1352c5d539457337d35ee9babfbe622a60f5f9",
+      "phrase_digest": "40819fa9b7f586b94abb32bde9767a81cc54e813f7cd17d8e9a0cf558fdbcd08",
+      "pool": "fe90a4baa5610e784e3ddc507ad48825c32bd5a392f90d05cc732994701124a6",
+      "seed": "9387893eb168ab2ce5b7cba12793c4b4eb4c1998c07098a8c3a79557c4efb465",
+      "candidate_keys": [
+        {
+          "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+          "key": "8042265524ca91220f4eea0c083b87f5d0ccb9fd7b4877ded9ca24e6f120273e0000000000000000000000000000000000000000000000000000000000000002"
+        },
+        {
+          "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+          "key": "937dc20ae2359a9cbc0137e3546f2873f8e4f238eb4ce2955f6bdf1e284fd6690000000000000000000000000000000000000000000000000000000000000003"
+        },
+        {
+          "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+          "key": "95a5758b02ba5eb0df38a32abf5e93273d29627eb335fd5f9796f3acd15ab48d0000000000000000000000000000000000000000000000000000000000000001"
+        },
+        {
+          "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+          "key": "a54866a7f7022e11beff3ba7e5418f40eaa687d0351ef27356a5c561e136d63f0000000000000000000000000000000000000000000000000000000000000004"
+        }
+      ],
+      "winners": [
+        {
+          "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+          "ordinal": 1,
+          "revision": 3,
+          "evidence_root": "6073f64ca70e874920e8b6c29dad9817440794130f7427986ac24cc0f1b7f540"
+        },
+        {
+          "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+          "ordinal": 3,
+          "revision": 3,
+          "evidence_root": "31e8e9a476c2d3051471f42da4135f7b26f8732282f05da8167e11eec30b73c8"
+        }
+      ],
+      "winner_root": "f047aac420cf5953b60cedd2407309fa4f877e644b51c269982639332a55dd2f",
+      "outcome_rules_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "outcome_hash": "ee3ae9b48cf37d09a75235f3f7e9da1b76fd04464c0a66169126351417433f50"
+    }
+  ],
+  "histories": [
+    {
+      "name": "solana-reject-approve-reject-approve",
+      "input": {
+        "profile": {
+          "family": "solana",
+          "instance": "00000000000000000000000000000000000000000000000000000000000003e8",
+          "chain_id": 31337,
+          "giveaway_id": 7
+        },
+        "terms": {
+          "brand": "0000000000000000000000000000000000000000000000000000000000000384",
+          "host": "0000000000000000000000000000000000000000000000000000000000000385",
+          "funding": 10003,
+          "fee_bps": 500,
+          "winners": 2,
+          "participant_cap": 4096,
+          "start": 100,
+          "entry_end": 200,
+          "reveal_end": 300,
+          "remediation_end": 400,
+          "opening_cutoff": 500,
+          "review_duration": 100,
+          "final_deadline": 650,
+          "finalization_reserve": 50
+        },
+        "tasks": [
+          {
+            "task_id": 0,
+            "title": "Follow",
+            "instructions": "Follow the published brand account.",
+            "target_uri": "https://example.invalid/brand",
+            "evidence_prompt": "Public account identifier",
+            "max_evidence_bytes": 256
+          },
+          {
+            "task_id": 1,
+            "title": "Comment",
+            "instructions": "Publish an original comment.",
+            "target_uri": "",
+            "evidence_prompt": "Public comment link",
+            "max_evidence_bytes": 256
+          }
+        ],
+        "events": [
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_id": 0,
+            "text": "account-1",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_id": 0,
+            "text": "account-2",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_id": 0,
+            "text": "account-3",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_id": 0,
+            "text": "account-4",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_id": 1,
+            "text": "comment-1",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_id": 1,
+            "text": "comment-2",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_id": 1,
+            "text": "comment-3",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_id": 1,
+            "text": "comment-4",
+            "now": 111
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "now": 113
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "now": 116
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "freeze",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 310
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 320
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 0,
+            "approve": false,
+            "now": 321,
+            "reason": 1
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 322
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 1,
+            "approve": true,
+            "now": 323,
+            "reason": 0
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 324
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 2,
+            "approve": false,
+            "now": 325,
+            "reason": 1
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 326
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 3,
+            "approve": true,
+            "now": 327,
+            "reason": 0
+          },
+          {
+            "operation": "prepare_outcome",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 400
+          },
+          {
+            "operation": "lock",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 401
+          }
+        ]
+      },
+      "expected": {
+        "task_root": "e9f3c990c458ac16110347e53580d366553e9b74cdb2db6e7c58f7df9d3a4503",
+        "registered": [
+          "0000000000000000000000000000000000000000000000000000000000000001",
+          "0000000000000000000000000000000000000000000000000000000000000002",
+          "0000000000000000000000000000000000000000000000000000000000000003",
+          "0000000000000000000000000000000000000000000000000000000000000004"
+        ],
+        "pool": "fe90a4baa5610e784e3ddc507ad48825c32bd5a392f90d05cc732994701124a6",
+        "seed": "9387893eb168ab2ce5b7cba12793c4b4eb4c1998c07098a8c3a79557c4efb465",
+        "ranking": [
+          "0000000000000000000000000000000000000000000000000000000000000002",
+          "0000000000000000000000000000000000000000000000000000000000000003",
+          "0000000000000000000000000000000000000000000000000000000000000001",
+          "0000000000000000000000000000000000000000000000000000000000000004"
+        ],
+        "pending": null,
+        "decisions": [
+          {
+            "ordinal": 0,
+            "round": 1,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "1544f65274ba219f00c04fcfff82715f0fbb9234dc8a51fabe6f588a3a0dc13d",
+            "opened_at": 320,
+            "review_deadline": 420,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 321
+          },
+          {
+            "ordinal": 1,
+            "round": 2,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "6073f64ca70e874920e8b6c29dad9817440794130f7427986ac24cc0f1b7f540",
+            "opened_at": 322,
+            "review_deadline": 422,
+            "approve": true,
+            "reason": 0,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 323
+          },
+          {
+            "ordinal": 2,
+            "round": 3,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "slot": 1,
+            "entry_revision": 3,
+            "evidence_root": "dd62531d1fe74d7381d8263421829ffcfc1da9416623e07f2a15a73113bd5632",
+            "opened_at": 324,
+            "review_deadline": 424,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 325
+          },
+          {
+            "ordinal": 3,
+            "round": 4,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "slot": 1,
+            "entry_revision": 3,
+            "evidence_root": "31e8e9a476c2d3051471f42da4135f7b26f8732282f05da8167e11eec30b73c8",
+            "opened_at": 326,
+            "review_deadline": 426,
+            "approve": true,
+            "reason": 0,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 327
+          }
+        ],
+        "approved": [
+          "0000000000000000000000000000000000000000000000000000000000000003",
+          "0000000000000000000000000000000000000000000000000000000000000004"
+        ],
+        "outcome": {
+          "kind": "success",
+          "winners": [
+            "0000000000000000000000000000000000000000000000000000000000000003",
+            "0000000000000000000000000000000000000000000000000000000000000004"
+          ],
+          "fee": 500,
+          "per_winner": 4751,
+          "creator_refund": 1
+        },
+        "paid": []
+      }
+    },
+    {
+      "name": "solana-partial-approved-full-exhaustion",
+      "input": {
+        "profile": {
+          "family": "solana",
+          "instance": "00000000000000000000000000000000000000000000000000000000000003e8",
+          "chain_id": 31337,
+          "giveaway_id": 7
+        },
+        "terms": {
+          "brand": "0000000000000000000000000000000000000000000000000000000000000384",
+          "host": "0000000000000000000000000000000000000000000000000000000000000385",
+          "funding": 10003,
+          "fee_bps": 500,
+          "winners": 2,
+          "participant_cap": 4096,
+          "start": 100,
+          "entry_end": 200,
+          "reveal_end": 300,
+          "remediation_end": 400,
+          "opening_cutoff": 500,
+          "review_duration": 100,
+          "final_deadline": 650,
+          "finalization_reserve": 50
+        },
+        "tasks": [
+          {
+            "task_id": 0,
+            "title": "Follow",
+            "instructions": "Follow the published brand account.",
+            "target_uri": "https://example.invalid/brand",
+            "evidence_prompt": "Public account identifier",
+            "max_evidence_bytes": 256
+          },
+          {
+            "task_id": 1,
+            "title": "Comment",
+            "instructions": "Publish an original comment.",
+            "target_uri": "",
+            "evidence_prompt": "Public comment link",
+            "max_evidence_bytes": 256
+          }
+        ],
+        "events": [
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_id": 0,
+            "text": "account-1",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_id": 0,
+            "text": "account-2",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_id": 0,
+            "text": "account-3",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_id": 0,
+            "text": "account-4",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_id": 1,
+            "text": "comment-1",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_id": 1,
+            "text": "comment-2",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_id": 1,
+            "text": "comment-3",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_id": 1,
+            "text": "comment-4",
+            "now": 111
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "now": 113
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "now": 116
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "freeze",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 310
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 320
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 0,
+            "approve": false,
+            "now": 321,
+            "reason": 1
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 322
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 1,
+            "approve": false,
+            "now": 323,
+            "reason": 1
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 324
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 2,
+            "approve": false,
+            "now": 325,
+            "reason": 1
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 326
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 3,
+            "approve": true,
+            "now": 327,
+            "reason": 0
+          },
+          {
+            "operation": "prepare_outcome",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 400
+          },
+          {
+            "operation": "lock",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 401
+          }
+        ]
+      },
+      "expected": {
+        "task_root": "e9f3c990c458ac16110347e53580d366553e9b74cdb2db6e7c58f7df9d3a4503",
+        "registered": [
+          "0000000000000000000000000000000000000000000000000000000000000001",
+          "0000000000000000000000000000000000000000000000000000000000000002",
+          "0000000000000000000000000000000000000000000000000000000000000003",
+          "0000000000000000000000000000000000000000000000000000000000000004"
+        ],
+        "pool": "fe90a4baa5610e784e3ddc507ad48825c32bd5a392f90d05cc732994701124a6",
+        "seed": "9387893eb168ab2ce5b7cba12793c4b4eb4c1998c07098a8c3a79557c4efb465",
+        "ranking": [
+          "0000000000000000000000000000000000000000000000000000000000000002",
+          "0000000000000000000000000000000000000000000000000000000000000003",
+          "0000000000000000000000000000000000000000000000000000000000000001",
+          "0000000000000000000000000000000000000000000000000000000000000004"
+        ],
+        "pending": null,
+        "decisions": [
+          {
+            "ordinal": 0,
+            "round": 1,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "1544f65274ba219f00c04fcfff82715f0fbb9234dc8a51fabe6f588a3a0dc13d",
+            "opened_at": 320,
+            "review_deadline": 420,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 321
+          },
+          {
+            "ordinal": 1,
+            "round": 2,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "6073f64ca70e874920e8b6c29dad9817440794130f7427986ac24cc0f1b7f540",
+            "opened_at": 322,
+            "review_deadline": 422,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 323
+          },
+          {
+            "ordinal": 2,
+            "round": 3,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "dd62531d1fe74d7381d8263421829ffcfc1da9416623e07f2a15a73113bd5632",
+            "opened_at": 324,
+            "review_deadline": 424,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 325
+          },
+          {
+            "ordinal": 3,
+            "round": 4,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "31e8e9a476c2d3051471f42da4135f7b26f8732282f05da8167e11eec30b73c8",
+            "opened_at": 326,
+            "review_deadline": 426,
+            "approve": true,
+            "reason": 0,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 327
+          }
+        ],
+        "approved": [
+          "0000000000000000000000000000000000000000000000000000000000000004"
+        ],
+        "outcome": {
+          "kind": "success",
+          "winners": [
+            "0000000000000000000000000000000000000000000000000000000000000004"
+          ],
+          "fee": 500,
+          "per_winner": 9503,
+          "creator_refund": 0
+        },
+        "paid": []
+      }
+    },
+    {
+      "name": "solana-all-rejected",
+      "input": {
+        "profile": {
+          "family": "solana",
+          "instance": "00000000000000000000000000000000000000000000000000000000000003e8",
+          "chain_id": 31337,
+          "giveaway_id": 7
+        },
+        "terms": {
+          "brand": "0000000000000000000000000000000000000000000000000000000000000384",
+          "host": "0000000000000000000000000000000000000000000000000000000000000385",
+          "funding": 10003,
+          "fee_bps": 500,
+          "winners": 2,
+          "participant_cap": 4096,
+          "start": 100,
+          "entry_end": 200,
+          "reveal_end": 300,
+          "remediation_end": 400,
+          "opening_cutoff": 500,
+          "review_duration": 100,
+          "final_deadline": 650,
+          "finalization_reserve": 50
+        },
+        "tasks": [
+          {
+            "task_id": 0,
+            "title": "Follow",
+            "instructions": "Follow the published brand account.",
+            "target_uri": "https://example.invalid/brand",
+            "evidence_prompt": "Public account identifier",
+            "max_evidence_bytes": 256
+          },
+          {
+            "task_id": 1,
+            "title": "Comment",
+            "instructions": "Publish an original comment.",
+            "target_uri": "",
+            "evidence_prompt": "Public comment link",
+            "max_evidence_bytes": 256
+          }
+        ],
+        "events": [
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_id": 0,
+            "text": "account-1",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_id": 0,
+            "text": "account-2",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_id": 0,
+            "text": "account-3",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_id": 0,
+            "text": "account-4",
+            "now": 110
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_id": 1,
+            "text": "comment-1",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_id": 1,
+            "text": "comment-2",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_id": 1,
+            "text": "comment-3",
+            "now": 111
+          },
+          {
+            "operation": "publish",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_id": 1,
+            "text": "comment-4",
+            "now": 111
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "commit",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "commitment": "a858dc5e783ec0b084953a1a3c871909e6b16acdceb8a8310d86fbc6b996e775",
+            "now": 112
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "now": 113
+          },
+          {
+            "operation": "begin_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "now": 113
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_ids": [
+              0
+            ],
+            "now": 114
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "process_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "task_ids": [
+              1
+            ],
+            "now": 115
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "now": 116
+          },
+          {
+            "operation": "finish_seal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "now": 116
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "reveal",
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "phrase": "Chance",
+            "salt_hex": "01",
+            "now": 210
+          },
+          {
+            "operation": "freeze",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 310
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 320
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 0,
+            "approve": false,
+            "now": 321,
+            "reason": 1
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 322
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 1,
+            "approve": false,
+            "now": 323,
+            "reason": 1
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 324
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 2,
+            "approve": false,
+            "now": 325,
+            "reason": 1
+          },
+          {
+            "operation": "open_candidate",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000385",
+            "now": 326
+          },
+          {
+            "operation": "review",
+            "signer": "0000000000000000000000000000000000000000000000000000000000000384",
+            "ordinal": 3,
+            "approve": false,
+            "now": 327,
+            "reason": 1
+          },
+          {
+            "operation": "refund",
+            "now": 400
+          }
+        ]
+      },
+      "expected": {
+        "task_root": "e9f3c990c458ac16110347e53580d366553e9b74cdb2db6e7c58f7df9d3a4503",
+        "registered": [
+          "0000000000000000000000000000000000000000000000000000000000000001",
+          "0000000000000000000000000000000000000000000000000000000000000002",
+          "0000000000000000000000000000000000000000000000000000000000000003",
+          "0000000000000000000000000000000000000000000000000000000000000004"
+        ],
+        "pool": "fe90a4baa5610e784e3ddc507ad48825c32bd5a392f90d05cc732994701124a6",
+        "seed": "9387893eb168ab2ce5b7cba12793c4b4eb4c1998c07098a8c3a79557c4efb465",
+        "ranking": [
+          "0000000000000000000000000000000000000000000000000000000000000002",
+          "0000000000000000000000000000000000000000000000000000000000000003",
+          "0000000000000000000000000000000000000000000000000000000000000001",
+          "0000000000000000000000000000000000000000000000000000000000000004"
+        ],
+        "pending": null,
+        "decisions": [
+          {
+            "ordinal": 0,
+            "round": 1,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000002",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "1544f65274ba219f00c04fcfff82715f0fbb9234dc8a51fabe6f588a3a0dc13d",
+            "opened_at": 320,
+            "review_deadline": 420,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 321
+          },
+          {
+            "ordinal": 1,
+            "round": 2,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000003",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "6073f64ca70e874920e8b6c29dad9817440794130f7427986ac24cc0f1b7f540",
+            "opened_at": 322,
+            "review_deadline": 422,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 323
+          },
+          {
+            "ordinal": 2,
+            "round": 3,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000001",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "dd62531d1fe74d7381d8263421829ffcfc1da9416623e07f2a15a73113bd5632",
+            "opened_at": 324,
+            "review_deadline": 424,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 325
+          },
+          {
+            "ordinal": 3,
+            "round": 4,
+            "wallet": "0000000000000000000000000000000000000000000000000000000000000004",
+            "slot": 0,
+            "entry_revision": 3,
+            "evidence_root": "31e8e9a476c2d3051471f42da4135f7b26f8732282f05da8167e11eec30b73c8",
+            "opened_at": 326,
+            "review_deadline": 426,
+            "approve": false,
+            "reason": 1,
+            "note": "",
+            "task_ids": [],
+            "decided_at": 327
+          }
+        ],
+        "approved": [],
+        "outcome": {
+          "kind": "refund",
+          "reason": "zero_approved_exhaustion",
+          "winners": [],
+          "fee": 0,
+          "per_winner": 0,
+          "creator_refund": 10003
+        },
+        "paid": []
+      }
+    }
+  ]
+}

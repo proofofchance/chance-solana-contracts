@@ -55,7 +55,7 @@ fn instruction(program: Pubkey, config: Pubkey, authority: Pubkey, domain: &str)
             ],
             [
                 Sha256::digest(b"global:initialize")[..8].to_vec(),
-                wire::to_vec(&(500u16, 3_600u32, 3_600u32)).unwrap(),
+                wire::to_vec(&(authority.to_bytes(), 500u16, <[u8; 32]>::from(Sha256::digest(b"EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG")))).unwrap(),
             ]
             .concat(),
         ),

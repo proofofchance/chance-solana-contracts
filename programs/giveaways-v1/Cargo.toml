@@ -11,7 +11,8 @@ crate-type = ["cdylib", "lib"]
 name = "giveaways"
 
 [features]
-staging-afresh-v1 = []
+brand-review = []
+staging-afresh-v1 = ["brand-review"]
 devnet-v1 = []
 allow-early-upload = []
 no-entrypoint = []
