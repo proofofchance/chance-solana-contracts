@@ -11,6 +11,7 @@ pub const GIVEAWAY_ACCOUNT_VERSION: u16 = 2;
 
 /// Status of a giveaway instance
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[borsh(use_discriminant = false)]
 pub enum GiveawayStatus {
     /// Giveaway is active (not settled). Phase is derived from timers.
     #[default]
@@ -620,5 +621,18 @@ mod tests {
 
         assert!(giveaway.reveal_publication_allowed(150));
         assert!(giveaway.is_ready_for_settlement(150));
+    }
+}
+
+#[cfg(test)]
+mod ordinal_wire_tests {
+    use super::GiveawayStatus;
+
+    #[test]
+    fn status_preserves_the_original_borsh_ordinal_bytes() {
+        assert_eq!(borsh::to_vec(&GiveawayStatus::Active).unwrap(), [0]);
+        assert_eq!(borsh::to_vec(&GiveawayStatus::Settled).unwrap(), [1]);
+        assert_eq!(borsh::from_slice::<GiveawayStatus>(&[0]).unwrap(), GiveawayStatus::Active);
+        assert_eq!(borsh::from_slice::<GiveawayStatus>(&[1]).unwrap(), GiveawayStatus::Settled);
     }
 }

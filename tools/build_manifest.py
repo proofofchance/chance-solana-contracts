@@ -11,7 +11,7 @@ import re
 import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-IMAGE='solanafoundation/solana-verifiable-build@sha256:ff3b148fb6adc3025c46ac38f132f473ccbdc4391f253234d98aa6519aec07f8'
+IMAGE='solanafoundation/solana-verifiable-build@sha256:12fd4c0a0790f0fc41ef74b0cdb6bccc167ba6137eb1adb749bac649481c86bd'
 PROGRAMS={'daily_lottery':'daily-lottery-v1','giveaways':'giveaways-v1','chance_registry':'registry'}
 
 
@@ -33,14 +33,14 @@ def main():
     head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     if head!=args.commit:
         parser.error('The checked-out commit differs from --commit')
-    subprocess.run(['git','diff','--exit-code','HEAD','--','programs','crates','.cargo','rust-toolchain.toml','Cargo.lock'],cwd=ROOT,check=True,capture_output=True)
-    untracked=subprocess.check_output(['git','ls-files','--others','--exclude-standard','--','programs','crates','.cargo','rust-toolchain.toml','Cargo.lock'],cwd=ROOT,text=True)
+    subprocess.run(['git','diff','--exit-code','HEAD','--','programs','crates','.cargo','rust-toolchain.toml','Cargo.lock','tests/runtime', 'tools/sbf-builder'],cwd=ROOT,check=True,capture_output=True)
+    untracked=subprocess.check_output(['git','ls-files','--others','--exclude-standard','--','programs','crates','.cargo','rust-toolchain.toml','Cargo.lock','tests/runtime', 'tools/sbf-builder'],cwd=ROOT,text=True)
     if untracked.strip():
         parser.error('Untracked build inputs must be committed or removed')
     program=PROGRAMS[args.library]
     lock=f'programs/{program}/Cargo.lock'
     source={'repository':args.repository,'commit':args.commit,'mountRoot':'.','manifest':f'programs/{program}/Cargo.toml',
-            'library':args.library,'features':[args.features] if args.features else [],'buildImage':IMAGE,'verifierVersion':'0.4.11',
+            'library':args.library,'features':[args.features] if args.features else [],'buildImage':IMAGE,'verifierVersion':'0.5.2',
             'cargoArgs':['-Znext-lockfile-bump'] + (['--features',args.features] if args.features else []),'verifierSuppliesLocked':True,'lockSha256':hashlib.sha256((ROOT/lock).read_bytes()).hexdigest()}
     manifest={'schema':1,'library':args.library,'source':source,
               'sourceReferenceSha256':hashlib.sha256(json.dumps(source,sort_keys=True,separators=(',',':')).encode()).hexdigest(),

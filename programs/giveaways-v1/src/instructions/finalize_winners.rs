@@ -30,7 +30,7 @@ pub struct FinalizeWinners<'info> {
     pub giveaway: Account<'info, Giveaway>,
     /// CHECK: Validated against the giveaway vault.
     #[account(constraint = vault.key() == giveaway.vault @ GiveawayError::InvalidAccount)]
-    pub vault: AccountInfo<'info>,
+    pub vault: UncheckedAccount<'info>,
     #[account(init_if_needed, payer = authority, space = WinnersLedger::SIZE,
         seeds = [WINNERS_LEDGER_SEED, giveaway.key().as_ref()], bump)]
     pub winners_ledger: Account<'info, WinnersLedger>,

@@ -33,7 +33,7 @@ pub struct CreateGiveaway<'info> {
         seeds = [VAULT_SEED, giveaway.key().as_ref()],
         bump
     )]
-    pub vault: AccountInfo<'info>,
+    pub vault: UncheckedAccount<'info>,
 
     #[account(mut)]
     pub creator: Signer<'info>,

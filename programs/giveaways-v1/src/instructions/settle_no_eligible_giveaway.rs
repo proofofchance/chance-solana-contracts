@@ -29,7 +29,7 @@ pub struct SettleNoEligibleGiveaway<'info> {
         mut,
         constraint = vault.key() == giveaway.vault @ GiveawayError::InvalidAccount
     )]
-    pub vault: AccountInfo<'info>,
+    pub vault: UncheckedAccount<'info>,
 
     #[account(
         constraint = winners_ledger.giveaway == giveaway.key() @ GiveawayError::InvalidAccount,
@@ -42,13 +42,13 @@ pub struct SettleNoEligibleGiveaway<'info> {
         mut,
         constraint = creator.key() == giveaway.creator @ GiveawayError::CreatorMismatch
     )]
-    pub creator: AccountInfo<'info>,
+    pub creator: UncheckedAccount<'info>,
 
     /// CHECK: Authority account - can be same as creator
     #[account(
         constraint = authority.key() == giveaway.provider_authority || authority.key() == giveaway.creator @ GiveawayError::Unauthorized
     )]
-    pub authority: AccountInfo<'info>,
+    pub authority: UncheckedAccount<'info>,
 }
 
 pub fn process(ctx: Context<SettleNoEligibleGiveaway>) -> Result<()> {

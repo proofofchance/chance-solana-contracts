@@ -103,7 +103,7 @@ class FreshBuildTests(unittest.TestCase):
                 for library in build.PROGRAMS:
                     (source / f'target/deploy/{library}.so').write_bytes(b'\x7fELF' + library.encode())
                 (source / 'target/deploy/giveaways-staging-afresh-v1.idl.json').write_text(json.dumps({'address': key(3)}))
-            with patch.object(build, 'source_inputs', return_value=fingerprints), patch.object(build, 'git', side_effect=fake_git), patch.object(build, 'source_snapshot', side_effect=snapshot), patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.4.11\n'):
+            with patch.object(build, 'source_inputs', return_value=fingerprints), patch.object(build, 'git', side_effect=fake_git), patch.object(build, 'source_snapshot', side_effect=snapshot), patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.5.2\n'):
                 record = build.reproduce(directory / 'private', directory / 'public', input_file, directory / 'output', build=fake_builder)
             self.assertEqual(calls, ['private', 'public'])
             self.assertEqual(record['provenance']['kind'], 'local_private_public_reproduction')
@@ -113,7 +113,7 @@ class FreshBuildTests(unittest.TestCase):
                 fake_builder(source, verifier)
                 if source.name == 'public':
                     (source / 'target/deploy/daily_lottery.so').write_bytes(b'\x7fELFdifferent')
-            with patch.object(build, 'source_inputs', return_value=fingerprints), patch.object(build, 'git', side_effect=fake_git), patch.object(build, 'source_snapshot', side_effect=snapshot), patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.4.11\n'):
+            with patch.object(build, 'source_inputs', return_value=fingerprints), patch.object(build, 'git', side_effect=fake_git), patch.object(build, 'source_snapshot', side_effect=snapshot), patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.5.2\n'):
                 with self.assertRaisesRegex(ValueError, 'exact ELF'):
                     build.reproduce(directory / 'private', directory / 'public', input_file, directory / 'mismatch', build=mismatched)
             self.assertFalse((directory / 'mismatch/artifacts.json').exists())
@@ -136,7 +136,7 @@ class FreshBuildTests(unittest.TestCase):
                 if Path(path).name.startswith('.afresh-reproduce-'):
                     raise PermissionError('isolated cleanup failure')
                 return original(path, *args, **kwargs)
-            with patch.object(build, 'source_inputs', return_value=fingerprints), patch.object(build, 'git', side_effect=fake_git), patch.object(build, 'source_snapshot', side_effect=snapshot), patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.4.11\n'), patch.object(build.shutil, 'rmtree', side_effect=failed_cleanup):
+            with patch.object(build, 'source_inputs', return_value=fingerprints), patch.object(build, 'git', side_effect=fake_git), patch.object(build, 'source_snapshot', side_effect=snapshot), patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.5.2\n'), patch.object(build.shutil, 'rmtree', side_effect=failed_cleanup):
                 with self.assertRaisesRegex(PermissionError, 'cleanup failure'):
                     build.reproduce(directory / 'private', directory / 'public', input_file, directory / 'output', build=builder)
             self.assertFalse((directory / 'output').exists())
@@ -167,7 +167,7 @@ class SeparateTreeTests(unittest.TestCase):
         stack.enter_context(patch.object(build, 'source_inputs', return_value=self.fingerprints))
         stack.enter_context(patch.object(build, 'git', side_effect=self.fake_git))
         stack.enter_context(patch.object(build, 'source_snapshot', side_effect=self.snapshot))
-        stack.enter_context(patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.4.11\n'))
+        stack.enter_context(patch.object(build.subprocess, 'check_output', return_value='solana-verify 0.5.2\n'))
         return stack
 
     def trees(self, directory, input_file, builder=None):

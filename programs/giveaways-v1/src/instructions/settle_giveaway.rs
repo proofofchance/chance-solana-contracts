@@ -28,20 +28,20 @@ pub struct SettleGiveaway<'info> {
         mut,
         constraint = vault.key() == giveaway.vault @ GiveawayError::InvalidAccount
     )]
-    pub vault: AccountInfo<'info>,
+    pub vault: UncheckedAccount<'info>,
 
     /// CHECK: Fixed refund recipient is constrained to the instance creator.
     #[account(
         mut,
         constraint = creator.key() == giveaway.creator @ GiveawayError::CreatorMismatch
     )]
-    pub creator: AccountInfo<'info>,
+    pub creator: UncheckedAccount<'info>,
 
     /// CHECK: Authority account - can be same as creator
     #[account(
         constraint = authority.key() == giveaway.provider_authority || authority.key() == giveaway.creator @ GiveawayError::Unauthorized
     )]
-    pub authority: AccountInfo<'info>,
+    pub authority: UncheckedAccount<'info>,
 }
 
 pub fn process(ctx: Context<SettleGiveaway>) -> Result<()> {

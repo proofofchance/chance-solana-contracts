@@ -18,13 +18,13 @@ import sys
 import tarfile
 import tempfile
 
-IMAGE = 'solanafoundation/solana-verifiable-build@sha256:ff3b148fb6adc3025c46ac38f132f473ccbdc4391f253234d98aa6519aec07f8'
+IMAGE = 'solanafoundation/solana-verifiable-build@sha256:12fd4c0a0790f0fc41ef74b0cdb6bccc167ba6137eb1adb749bac649481c86bd'
 GENESIS = 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG'
 INPUT_PATH = 'releases/staging-afresh-v1.inputs'
 KEYS = ('schema', 'environment', 'genesis_hash', 'registry_program',
         'daily_lottery_program', 'giveaways_program', 'initialization_authority')
 PROGRAMS = {'chance_registry': 'registry', 'daily_lottery': 'daily-lottery-v1', 'giveaways': 'giveaways-v1'}
-ROOTS = ('programs', 'crates', '.cargo', 'Cargo.lock', 'rust-toolchain.toml', 'tools/idl-export')
+ROOTS = ('programs', 'crates', '.cargo', 'Cargo.lock', 'rust-toolchain.toml', 'tools/idl-export', 'tests/runtime', 'tools/sbf-builder')
 MAX_TARGET_ENTRIES = 200000
 TREES = ('private', 'public')
 OUTPUTS = tuple(f'{library}.so' for library in PROGRAMS) + ('giveaways-staging-afresh-v1.idl.json',)
@@ -341,8 +341,8 @@ def artifact_manifest(library, elf, public_commit, private_commit, fingerprints,
     source = {'repository': 'https://github.com/proofofchance/chance-solana-contracts',
               'commit': public_commit, 'privateCommit': private_commit, 'mountRoot': '.',
               'manifest': f'programs/{program}/Cargo.toml', 'library': library,
-              'features': features(library, daily_test_controls), 'buildImage': IMAGE, 'verifierVersion': '0.4.11',
-              'rustToolchain': '1.89.0', 'cargoArgs': ['-Znext-lockfile-bump', '--features', ','.join(features(library, daily_test_controls))],
+              'features': features(library, daily_test_controls), 'buildImage': IMAGE, 'verifierVersion': '0.5.2',
+              'rustToolchain': '1.100.0', 'cargoArgs': ['-Znext-lockfile-bump', '--features', ','.join(features(library, daily_test_controls))],
               'verifierSuppliesLocked': True, 'lockSha256': fingerprints[f'programs/{program}/Cargo.lock'],
               'sourceInputsSha256': digest(canonical(fingerprints).encode()),
               'releaseInputs': {'path': INPUT_PATH, 'text': inputs.decode('ascii'), 'sha256': digest(inputs)}}
@@ -372,8 +372,8 @@ def _require_public(source):
 
 def _require_verifier(verifier):
     version = subprocess.check_output([verifier, '--version'], text=True).strip()
-    if version != 'solana-verify 0.4.11':
-        raise ValueError('solana-verify 0.4.11 is required')
+    if version != 'solana-verify 0.5.2':
+        raise ValueError('solana-verify 0.5.2 is required')
 
 
 def _matching_sources(private_source, public_source):

@@ -27,20 +27,20 @@ pub struct SettlePayoutBatch<'info> {
     pub giveaway: Account<'info, Giveaway>,
     /// CHECK: Validated against giveaway state.
     #[account(mut, constraint = vault.key() == giveaway.vault @ GiveawayError::InvalidAccount)]
-    pub vault: AccountInfo<'info>,
+    pub vault: UncheckedAccount<'info>,
     #[account(mut, constraint = winners_ledger.giveaway == giveaway.key() @ GiveawayError::InvalidAccount,
         constraint = winners_ledger.locked @ GiveawayError::WinnersNotLocked)]
     pub winners_ledger: Account<'info, WinnersLedger>,
     /// CHECK: Fixed service-fee recipient; no signature is required.
     #[account(mut, constraint = authority.key() == giveaway.provider_authority @ GiveawayError::Unauthorized)]
-    pub authority: AccountInfo<'info>,
+    pub authority: UncheckedAccount<'info>,
     /// CHECK: Fixed remainder recipient.
     #[account(mut, constraint = creator.key() == giveaway.creator @ GiveawayError::CreatorMismatch)]
-    pub creator: AccountInfo<'info>,
+    pub creator: UncheckedAccount<'info>,
 }
 
 pub fn process<'info>(
-    ctx: Context<'_, '_, '_, 'info, SettlePayoutBatch<'info>>,
+    ctx: Context<'info, SettlePayoutBatch<'info>>,
     batch_index: u32,
     winners: Vec<WinnerProof>,
 ) -> Result<()> {

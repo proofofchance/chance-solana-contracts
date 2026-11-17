@@ -29,7 +29,7 @@ pub struct LockWinners<'info> {
 
     /// CHECK: Kept for ABI compatibility and validated against giveaway state.
     #[account(constraint = creator.key() == giveaway.creator @ GiveawayError::CreatorMismatch)]
-    pub creator: AccountInfo<'info>,
+    pub creator: UncheckedAccount<'info>,
 }
 
 pub fn process(ctx: Context<LockWinners>) -> Result<()> {

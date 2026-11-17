@@ -465,7 +465,8 @@ impl Env {
         svm.warp_to_slot(10);
         svm.add_program_from_file(
             PROGRAM,
-            std::env::var("CHANCE_GIVEAWAY_BRAND_REVIEW_ELF").expect("explicit successor ELF required"),
+            std::env::var("CHANCE_GIVEAWAY_BRAND_REVIEW_ELF")
+                .expect("explicit successor ELF required"),
         )
         .unwrap();
         let registry = Pubkey::new_unique();

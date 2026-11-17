@@ -1,7 +1,7 @@
 //! Versioned registry wire types. Addresses are bytes so both Solana SDK generations
 //! share the exact same encoding without linking each other's runtime dependencies.
-use borsh::{BorshDeserialize, BorshSerialize};
 pub use borsh::{from_slice, to_vec};
+use borsh::{BorshDeserialize, BorshSerialize};
 pub const SCHEMA: u16 = 1;
 pub const DAILY: u8 = 1;
 pub const GIVEAWAY: u8 = 2;
@@ -18,13 +18,32 @@ pub const MAX_REASON: usize = 384;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug)]
 pub enum Instruction {
-    Initialize { guardian: [u8; 32], activation_delay: u32 },
-    Register { domain: u8, series: [u8; 32], source_hash: [u8; 32], executable_hash: [u8; 32] },
-    Activate { reason: String },
-    Pause { reason: String },
-    Discontinue { reason: String },
-    SetSuccessor { reason: String },
-    RecordInstance { day_or_nonce: u64, rules_hash: [u8; 32] },
+    Initialize {
+        guardian: [u8; 32],
+        activation_delay: u32,
+    },
+    Register {
+        domain: u8,
+        series: [u8; 32],
+        source_hash: [u8; 32],
+        executable_hash: [u8; 32],
+    },
+    Activate {
+        reason: String,
+    },
+    Pause {
+        reason: String,
+    },
+    Discontinue {
+        reason: String,
+    },
+    SetSuccessor {
+        reason: String,
+    },
+    RecordInstance {
+        day_or_nonce: u64,
+        rules_hash: [u8; 32],
+    },
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug)]

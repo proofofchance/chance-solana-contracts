@@ -93,7 +93,19 @@ fn finalize_winners_once(
         &authority.pubkey(),
         (next_slot % 9).saturating_add(1),
     );
-    ctx.send_tx(vec![nonce_ix, ix], &[authority]).unwrap();
+    // Match chance-commands' bounded management envelope; keep other scenarios at
+    // the simulator's default instruction budget.
+    let metadata = ctx
+        .send_tx(
+            vec![common::max_compute_budget(), nonce_ix, ix],
+            &[authority],
+        )
+        .unwrap();
+    eprintln!(
+        "SBF finalization transaction: {} CU for {} participant rows",
+        metadata.compute_units_consumed,
+        participant_accounts.len()
+    );
 }
 
 const ATTESTATION_MESSAGE_DOMAIN_V2: &[u8] = &[

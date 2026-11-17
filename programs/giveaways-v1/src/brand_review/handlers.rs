@@ -1,3 +1,4 @@
+use crate::BorshBytes;
 use crate::{contexts::*, crypto::*, registry, state::*};
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
@@ -70,7 +71,7 @@ pub fn initialize(
     c.fee_bps = fee_bps;
     c.network_domain = network_domain;
     c.next_giveaway_id = 1;
-    record(0, ctx.accounts.config.key(), ctx.accounts.config.try_to_vec()?);
+    record(0, ctx.accounts.config.key(), ctx.accounts.config.borsh_bytes()?);
 
     Ok(())
 }
@@ -83,7 +84,7 @@ pub fn begin_rulebook(ctx: Context<BeginRulebook>, nonce: u64, task_count: u16) 
     r.creator = ctx.accounts.creator.key();
     r.nonce = nonce;
     r.task_count = task_count;
-    record(1, r.key(), r.try_to_vec()?);
+    record(1, r.key(), r.borsh_bytes()?);
 
     audit(1, r.key(), r.creator, nonce, [0; 32], u64::from(task_count))
 }
@@ -119,8 +120,8 @@ pub fn append_task(ctx: Context<AppendTask>, input: TaskInput) -> Result<()> {
     ctx.accounts.task.hash = h;
     r.root = fold(b"GIVEAWAY_TASKS_V2", &r.root, &h);
     r.appended += 1;
-    record(2, ctx.accounts.task.key(), ctx.accounts.task.try_to_vec()?);
-    record(1, r.key(), r.try_to_vec()?);
+    record(2, ctx.accounts.task.key(), ctx.accounts.task.borsh_bytes()?);
+    record(1, r.key(), r.borsh_bytes()?);
 
     audit(
         2,
@@ -138,7 +139,7 @@ pub fn seal_rulebook(ctx: Context<RulebookOwner>) -> Result<()> {
         GiveawayError::Coverage
     );
     r.sealed = true;
-    record(1, r.key(), r.try_to_vec()?);
+    record(1, r.key(), r.borsh_bytes()?);
 
     audit(
         3,
@@ -218,7 +219,7 @@ pub fn create(ctx: Context<Create>, id: u64, terms: Terms, expected: [u8; 32]) -
     ctx.accounts.vault.giveaway = g.key();
     transfer(
         CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.system_program.key(),
             Transfer {
                 from: ctx.accounts.creator.to_account_info(),
                 to: ctx.accounts.vault.to_account_info(),
@@ -246,8 +247,8 @@ pub fn create(ctx: Context<Create>, id: u64, terms: Terms, expected: [u8; 32]) -
         .next_giveaway_id
         .checked_add(1)
         .ok_or(GiveawayError::Limit)?;
-    record(3, g.key(), g.try_to_vec()?);
-    record(1, r.key(), r.try_to_vec()?);
+    record(3, g.key(), g.borsh_bytes()?);
+    record(1, r.key(), r.borsh_bytes()?);
 
     audit(4, g.key(), g.creator, id, rules, g.terms.funding)
 }
@@ -262,7 +263,7 @@ pub fn begin_entry(ctx: Context<BeginEntry>, commitment: [u8; 32]) -> Result<()>
     p.commitment = commitment;
     p.revision = 1;
     p.bump = ctx.bumps.participant;
-    record(4, p.key(), p.try_to_vec()?);
+    record(4, p.key(), p.borsh_bytes()?);
 
     audit(5, g.key(), p.wallet, p.index, commitment, 1)
 }
@@ -273,8 +274,8 @@ pub fn revise_commitment(ctx: Context<EntryOwner>, commitment: [u8; 32]) -> Resu
     let p = &mut ctx.accounts.participant;
     mutate(g, p)?;
     p.commitment = commitment;
-    record(4, p.key(), p.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(4, p.key(), p.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         6,
@@ -324,9 +325,9 @@ pub fn publish_evidence(
     e.text = text;
     e.published_at = Clock::get()?.unix_timestamp;
     e.bump = ctx.bumps.evidence;
-    record(5, e.key(), e.try_to_vec()?);
-    record(4, p.key(), p.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(5, e.key(), e.borsh_bytes()?);
+    record(4, p.key(), p.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         7,
@@ -349,7 +350,7 @@ pub fn begin_seal(ctx: Context<BeginSeal>) -> Result<()> {
     s.root = [0; 32];
     s.total_bytes = 0;
     s.active = true;
-    record(6, s.key(), s.try_to_vec()?);
+    record(6, s.key(), s.borsh_bytes()?);
 
     Ok(())
 }
@@ -399,7 +400,7 @@ pub fn process_seal(ctx: Context<ProcessSeal>) -> Result<()> {
             .ok_or(GiveawayError::Limit)?;
         s.cursor += 1;
     }
-    record(6, s.key(), s.try_to_vec()?);
+    record(6, s.key(), s.borsh_bytes()?);
 
     Ok(())
 }
@@ -426,9 +427,9 @@ pub fn finish_seal(ctx: Context<ProcessSeal>) -> Result<()> {
     p.evidence_root = s.root;
     s.active = false;
     g.sealed_count = g.sealed_count.checked_add(1).ok_or(GiveawayError::Limit)?;
-    record(4, p.key(), p.try_to_vec()?);
-    record(6, s.key(), s.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(4, p.key(), p.borsh_bytes()?);
+    record(6, s.key(), s.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         8,
@@ -479,8 +480,8 @@ pub fn attest_receipt(ctx: Context<Receipt>) -> Result<()> {
         .attested_count
         .checked_add(1)
         .ok_or(GiveawayError::Limit)?;
-    record(4, p.key(), p.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(4, p.key(), p.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         9,
@@ -547,8 +548,8 @@ pub fn reveal(ctx: Context<Reveal>, phrase: String, salt: Vec<u8>) -> Result<()>
     for (out, part) in g.aggregate.iter_mut().zip(p.contribution) {
         *out ^= part;
     }
-    record(4, p.key(), p.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(4, p.key(), p.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         10,
@@ -575,8 +576,8 @@ pub fn begin_pool(ctx: Context<BeginPool>) -> Result<()> {
     let r = &mut ctx.accounts.ranking;
     r.giveaway = g.key();
     r.phase = BUILDING;
-    record(7, ctx.accounts.ranking.key(), ctx.accounts.ranking.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(7, ctx.accounts.ranking.key(), ctx.accounts.ranking.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         11,
@@ -651,8 +652,8 @@ pub fn process_pool(ctx: Context<RankChunk>) -> Result<()> {
             g.registered_count,
         )?;
     }
-    record(7, r.key(), r.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(7, r.key(), r.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     Ok(())
 }
@@ -697,12 +698,12 @@ pub fn process_wave(ctx: Context<RankChunk>) -> Result<()> {
             g.key(),
             g.host,
             u64::from(r.wave),
-            hash(&[b"GIVEAWAY_WAVE_V2", &r.keys.try_to_vec()?]),
+            hash(&[b"GIVEAWAY_WAVE_V2", &r.keys.borsh_bytes()?]),
             r.keys.len() as u64,
         )?;
     }
-    record(7, r.key(), r.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(7, r.key(), r.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     Ok(())
 }
@@ -727,7 +728,7 @@ pub fn next_wave(ctx: Context<RankChunk>) -> Result<()> {
     r.next_key = 0;
     r.remaining = 0;
     r.phase = BUILDING;
-    record(7, r.key(), r.try_to_vec()?);
+    record(7, r.key(), r.borsh_bytes()?);
 
     Ok(())
 }
@@ -780,9 +781,9 @@ pub fn open_candidate(ctx: Context<OpenCandidate>, ordinal: u64) -> Result<()> {
     g.pending = true;
     g.pending_deadline = deadline;
     r.next_key += 1;
-    record(8, c.key(), c.try_to_vec()?);
-    record(7, r.key(), r.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(8, c.key(), c.borsh_bytes()?);
+    record(7, r.key(), r.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         14,
@@ -844,16 +845,16 @@ pub fn review_candidate(
     g.consumed_count += 1;
     g.pending = false;
     g.pending_deadline = 0;
-    record(8, c.key(), c.try_to_vec()?);
-    record(9, ctx.accounts.slot.key(), ctx.accounts.slot.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(8, c.key(), c.borsh_bytes()?);
+    record(9, ctx.accounts.slot.key(), ctx.accounts.slot.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         15,
         g.key(),
         g.brand,
         c.ordinal,
-        hash(&[b"GIVEAWAY_DECISION_V2", &c.try_to_vec()?]),
+        hash(&[b"GIVEAWAY_DECISION_V2", &c.borsh_bytes()?]),
         u64::from(c.verdict),
     )
 }
@@ -873,7 +874,7 @@ pub fn commit_outcome(ctx: Context<Finalize>) -> Result<()> {
     g.remainder = r;
     g.outcome_hash = outcome_hash(g, &g.key());
     g.status = VESTED;
-    record(3, g.key(), g.try_to_vec()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         16,
@@ -942,7 +943,7 @@ pub fn finalize_refund(ctx: Context<Refund>) -> Result<()> {
         &ctx.accounts.creator.to_account_info(),
         g.terms.funding,
     )?;
-    record(3, g.key(), g.try_to_vec()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         17,
@@ -971,8 +972,8 @@ pub fn pay_winner(ctx: Context<PayWinner>) -> Result<()> {
         &ctx.accounts.recipient.to_account_info(),
         g.per_winner,
     )?;
-    record(9, s.key(), s.try_to_vec()?);
-    record(3, g.key(), g.try_to_vec()?);
+    record(9, s.key(), s.borsh_bytes()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(
         18,
@@ -1002,7 +1003,7 @@ pub fn pay_beneficiaries(ctx: Context<PayBeneficiaries>) -> Result<()> {
             g.remainder,
         )?;
     }
-    record(3, g.key(), g.try_to_vec()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(19, g.key(), g.host, 0, g.outcome_hash, g.fee)
 }
@@ -1023,7 +1024,7 @@ pub fn withdraw_surplus(ctx: Context<Refund>) -> Result<()> {
         .checked_sub(floor)
         .ok_or(GiveawayError::Funds)?;
     send(&v, &ctx.accounts.creator.to_account_info(), surplus)?;
-    record(3, g.key(), g.try_to_vec()?);
+    record(3, g.key(), g.borsh_bytes()?);
 
     audit(20, g.key(), g.creator, 0, g.outcome_hash, surplus)
 }
