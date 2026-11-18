@@ -142,7 +142,6 @@ mod tests {
             &mut data_a,
             &program_id,
             false,
-            0,
         );
         let account_b = AccountInfo::new(
             &participant_b_key,
@@ -152,7 +151,6 @@ mod tests {
             &mut data_b,
             &program_id,
             false,
-            0,
         );
 
         let wallets =
@@ -185,7 +183,6 @@ mod tests {
             &mut data,
             &program_id,
             false,
-            0,
         );
 
         assert!(collect_canonical_eligible_wallets(
@@ -219,7 +216,6 @@ mod tests {
             &mut data,
             &wrong_owner,
             false,
-            0,
         );
 
         assert!(collect_canonical_eligible_wallets(&program_id, giveaway, 1, &[account]).is_err());
@@ -243,7 +239,6 @@ mod tests {
             &mut data,
             &program_id,
             false,
-            0,
         );
 
         assert!(collect_canonical_eligible_wallets(&program_id, giveaway, 1, &[account]).is_err());

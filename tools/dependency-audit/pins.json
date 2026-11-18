@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "name": "cargo-audit",
+  "version": "0.23.0",
+  "rust": "1.100.0",
+  "url": "https://static.crates.io/crates/cargo-audit/cargo-audit-0.23.0.crate",
+  "archive_sha256": "956f85aedfb64db887ec38466f982fc2b1ae55de726d4a12f2fddd5b812c6446",
+  "upstream_lock_sha256": "de8f907004200995439a9ebe170713799a832cd7fc9c2a8f380f5a47be720dc4",
+  "reviewed_lock_sha256": "31cecfa0af2cbb3d0c277829cd73c79426b7e46942613e1c6c367af4560d69bb",
+  "patches": [
+    {
+      "name": "rustix",
+      "before": "1.1.5",
+      "after": "1.1.6",
+      "checksum": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa"
+    },
+    {
+      "name": "quinn-proto",
+      "before": "0.11.18",
+      "after": "0.11.19",
+      "checksum": "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe"
+    },
+    {
+      "name": "quinn-udp",
+      "before": "0.5.15",
+      "after": "0.5.16",
+      "checksum": "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016"
+    }
+  ]
+}

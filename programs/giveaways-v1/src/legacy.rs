@@ -372,7 +372,7 @@ pub mod giveaways {
     /// 5. `[writable]` Creator refund account
     /// 6..N. `[writable]` Winner wallet accounts
     pub fn settle_payout_batch<'info>(
-        ctx: Context<'_, '_, '_, 'info, SettlePayoutBatch<'info>>,
+        ctx: Context<'info, SettlePayoutBatch<'info>>,
         batch_index: u32,
         winners: Vec<WinnerProof>,
     ) -> Result<()> {

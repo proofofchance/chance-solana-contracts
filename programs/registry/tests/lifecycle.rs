@@ -521,11 +521,12 @@ fn actual_daily_programs_share_uniqueness_and_survive_discontinuation() {
     bypass.accounts.truncate(5);
     assert!(f.external(bypass).is_err());
     assert_eq!(f.state().instance_count, 0);
-    // Dust at a predictable PDA cannot deny future canonical creation.
+    // Current SVM requires a newly funded system account to be rent exempt.
+    // Unsolicited prefunding at a predictable PDA still cannot deny creation.
     let donation = solana_system_interface::instruction::transfer(
         &f.admin.pubkey(),
         &create.accounts[10].pubkey,
-        1,
+        f.svm.minimum_balance_for_rent_exemption(0),
     );
     f.external(donation).unwrap();
     f.external(create.clone()).unwrap();
@@ -725,16 +726,37 @@ fn checked_giveaway_creation_rejects_stale_terms_before_funding_or_registry_reco
     stale[0] ^= 1;
     creation.data = anchor_data(
         "create_giveaway_checked",
-        &(1u64, 1_000_000u64, 1u32, start, start + 3_600, 3_600u32, 42u64, stale),
+        &(
+            1u64,
+            1_000_000u64,
+            1u32,
+            start,
+            start + 3_600,
+            3_600u32,
+            42u64,
+            stale,
+        ),
     );
     let initial_balance = f.svm.get_account(&creator.pubkey()).unwrap().lamports;
     assert!(f.external_by(creation.clone(), &creator).is_err());
     assert_eq!(f.state().instance_count, 0);
-    assert_eq!(f.svm.get_account(&creator.pubkey()).unwrap().lamports, initial_balance);
+    assert_eq!(
+        f.svm.get_account(&creator.pubkey()).unwrap().lamports,
+        initial_balance
+    );
     assert!(f.svm.get_account(&creation.accounts[1].pubkey).is_none());
     creation.data = anchor_data(
         "create_giveaway_checked",
-        &(1u64, 1_000_000u64, 1u32, start, start + 3_600, 3_600u32, 42u64, expected),
+        &(
+            1u64,
+            1_000_000u64,
+            1u32,
+            start,
+            start + 3_600,
+            3_600u32,
+            42u64,
+            expected,
+        ),
     );
     f.external_by(creation, &creator).unwrap();
     assert_eq!(f.state().instance_count, 1);

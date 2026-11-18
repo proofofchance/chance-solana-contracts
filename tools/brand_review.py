@@ -8,7 +8,7 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-INPUTS = ('programs', 'crates', '.cargo', 'Cargo.lock', 'rust-toolchain.toml')
+INPUTS = ('programs', 'crates', '.cargo', 'Cargo.lock', 'rust-toolchain.toml', 'tests/runtime', 'tools/sbf-builder')
 OUTPUT = ROOT / 'target/development/giveaways-brand-review-v1'
 
 
@@ -52,7 +52,7 @@ def main():
         elf = verify()
         if args.action == 'runtime':
             subprocess.run(['cargo', 'test', '--locked', '--manifest-path',
-                            'programs/registry/Cargo.toml', '--test', 'giveaway_brand_review',
+                            'tests/runtime/Cargo.toml', '--no-default-features', '--features', 'registry-suite', '--test', 'giveaway_brand_review',
                             '--', '--ignored'], cwd=ROOT, check=True,
                            env=dict(os.environ, CHANCE_GIVEAWAY_BRAND_REVIEW_ELF=str(elf)))
 

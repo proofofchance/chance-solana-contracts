@@ -3,4 +3,4 @@ name = "chance-registry-wire"
 version = "0.1.0"
 edition = "2021"
 [dependencies]
-borsh = { version = "=1.6.0", features = ["derive"] }
+borsh = { version = "=1.8.1", features = ["derive"] }

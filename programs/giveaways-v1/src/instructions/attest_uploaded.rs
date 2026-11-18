@@ -36,7 +36,7 @@ pub struct AttestUploaded<'info> {
 
     /// CHECK: Instructions sysvar used to verify the preceding Ed25519 receipt instruction.
     #[account(address = INSTRUCTIONS_SYSVAR_ID @ GiveawayError::InvalidAccount)]
-    pub instructions_sysvar: AccountInfo<'info>,
+    pub instructions_sysvar: UncheckedAccount<'info>,
 }
 
 pub fn process(ctx: Context<AttestUploaded>) -> Result<()> {

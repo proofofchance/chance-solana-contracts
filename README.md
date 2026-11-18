@@ -18,6 +18,36 @@ These are separate Cargo workspaces with pinned locks. Shared build inputs live 
 
 Follow [reproducible builds](docs/REPRODUCIBLE_BUILDS.md) for the pinned verifier/container and each selected library. CI compares two clean builds per executable and runs tests against those exact binaries. [Registry](docs/REGISTRY.md), [daily rules](docs/DAILY_LOTTERY_FIXED_RULES.md) and [giveaway rules](docs/GIVEAWAY_FIXED_RULES.md) describe protocol behavior. [Audit tools](audit/README.md) distinguish source/binary equality, authority checks, execution replay and security review.
 
+## Current dependency candidate
+
+Production program APIs use Solana 5.2.0; giveaways uses stable Anchor 1.2.2 with
+its `solana-v4` compatibility feature. Host checks use Rust 1.100.0. The pinned
+verifier is 0.5.2 and its current official supported builder uses platform-tools
+1.57. The separately prepared [latest builder recipe](tools/sbf-builder/README.md)
+uses SHA-verified tool 4.6.0/platform-tools 1.58; Docker reproduction remains
+qualification-pending after local image-download truncation. No image digest or
+existing deployment is relabeled.
+
+Run host invariants with `cargo test --locked --lib --manifest-path
+programs/<domain>/Cargo.toml`. The independent `tests/runtime/Cargo.toml` harness
+runs the original daily and registry suites against actual production-built ELF
+files. Set `SBF_OUT_DIR` to their deploy directory. Latest stable LiteSVM 0.18.2
+pins an older compatible API generation; its shared-source host model never
+supplies a program ELF. The production lockfiles remain independent.
+
+Production locks report no current vulnerabilities and retain the upstream
+bincode maintenance warning. The isolated simulator has three known upstream
+vulnerabilities and six informational findings. On 2026-11-17 the user approved
+only the [exact runtime baseline](audit/runtime-advisory-baseline.json), lock and
+62 reviewed harness/test/model/feature source hashes. Reviewed precompile paths
+verify public inputs; the old signing/secret-arithmetic helpers are not called,
+and no production signing keys enter the harness. New or changed findings,
+versions, categories, advisory details or source context fail closed. Complete
+raw reports and the original scanner exit remain visible; production and tool
+locks retain strict audits. Compatible patched upstream precompiles remain the
+remediation. The [reviewed scanner bootstrap](tools/dependency-audit/README.md)
+self-audits the patched cargo-audit 0.23.0 build without ignore flags.
+
 ## Non-production daily upload controls
 
 Daily lottery V1 keeps fixed production timing. Explicit local/staging builds can

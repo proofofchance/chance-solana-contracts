@@ -22,15 +22,18 @@ jobs:
             artifact: giveaways-brand-review-v1
     env:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
-      BUILD_IMAGE: solanafoundation/solana-verifiable-build@sha256:ff3b148fb6adc3025c46ac38f132f473ccbdc4391f253234d98aa6519aec07f8
+      BUILD_IMAGE: solanafoundation/solana-verifiable-build@sha256:12fd4c0a0790f0fc41ef74b0cdb6bccc167ba6137eb1adb749bac649481c86bd
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.15.2'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install pinned verifier binary
         run: |
-          curl --fail --location --retry 3 https://github.com/solana-foundation/solana-verifiable-build/releases/download/v0.4.11/solana-verify-linux -o "$RUNNER_TEMP/solana-verify"
-          printf '%s  %s\n' '2b0cf244902cf9324396db05fa38ea14c5ace3e05e57739b06be4f6e6c10b437' "$RUNNER_TEMP/solana-verify" | sha256sum -c -
+          curl --fail --location --retry 3 https://github.com/solana-foundation/solana-verifiable-build/releases/download/v0.5.2/solana-verify-0.5.2-linux -o "$RUNNER_TEMP/solana-verify"
+          printf '%s  %s\n' 'b9d5ccce9634dc14269cab3e7a58649bc141b3306e7735a94478c936341f211f' "$RUNNER_TEMP/solana-verify" | sha256sum -c -
           chmod +x "$RUNNER_TEMP/solana-verify"
           "$RUNNER_TEMP/solana-verify" --version
       - name: Build two clean trees of the exact candidate commit
@@ -49,7 +52,7 @@ jobs:
       - name: Keep feature ELF isolated
         if: matrix.features == 'brand-review'
         run: sudo mv target/deploy/giveaways.so target/deploy/giveaways-brand-review-v1.so
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: reproducible-${{ matrix.artifact || matrix.library }}
           path: |
@@ -61,22 +64,25 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.15.2'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: reproducible-*
           merge-multiple: true
           path: .
-      - run: rustup toolchain install 1.89.0 --profile minimal
+      - run: rustup toolchain install 1.100.0 --profile minimal
       - run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config libssl-dev
-      - run: cargo test --locked --manifest-path programs/daily-lottery-v1/Cargo.toml
+      - run: cargo test --locked --manifest-path tests/runtime/Cargo.toml --no-default-features --features daily-suite
       - name: Export real SBF audit evidence
         env:
           CHANCE_AUDIT_FIXTURE: ${{ runner.temp }}/giveaway-audit.json
           CHANCE_DAILY_AUDIT_FIXTURE: ${{ runner.temp }}/daily-audit.json
-        run: cargo test --locked --manifest-path programs/registry/Cargo.toml
+        run: cargo test --locked --manifest-path tests/runtime/Cargo.toml --no-default-features --features registry-suite
       - name: Verify account schemas and replay SBF evidence
         env:
           CHANCE_AUDIT_FIXTURE: ${{ runner.temp }}/giveaway-audit.json
@@ -90,7 +96,7 @@ jobs:
         env:
           CHANCE_GIVEAWAY_BRAND_REVIEW_ELF: ${{ github.workspace }}/target/deploy/giveaways-brand-review-v1.so
           CHANCE_GIVEAWAY_BRAND_REVIEW_CAPTURE: ${{ runner.temp }}/giveaway-brand-review-v1-capture.json
-        run: cargo test --locked --manifest-path programs/registry/Cargo.toml --test giveaway_brand_review -- --ignored
+        run: cargo test --locked --manifest-path tests/runtime/Cargo.toml --no-default-features --features registry-suite --test giveaway_brand_review -- --ignored
       - name: Verify V1 brand review execution capture and reject tampering
         env:
           CHANCE_GIVEAWAY_BRAND_REVIEW_CAPTURE: ${{ runner.temp }}/giveaway-brand-review-v1-capture.json

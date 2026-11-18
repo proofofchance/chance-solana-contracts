@@ -21,7 +21,7 @@ PUBLIC_REMOTES = (
     'https://github.com/proofofchance/chance-solana-contracts',
 )
 FILES = ('Cargo.lock', 'rust-toolchain.toml')
-ROOTS = ('programs/', 'crates/', '.cargo/', 'audit/', 'tools/')
+ROOTS = ('programs/', 'crates/', '.cargo/', 'audit/', 'tools/', 'tests/runtime/')
 
 
 def git(repo, *args):

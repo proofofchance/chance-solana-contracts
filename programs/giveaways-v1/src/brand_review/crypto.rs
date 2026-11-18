@@ -1,3 +1,4 @@
+use crate::BorshBytes;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
@@ -13,7 +14,7 @@ pub fn text_valid(text: &str, max: usize) -> bool {
         && text.bytes().any(|b| !b.is_ascii_whitespace())
 }
 pub fn task_hash(input: &TaskInput) -> Result<[u8; 32]> {
-    Ok(hash(&[b"GIVEAWAY_TASK_V2", &input.try_to_vec()?]))
+    Ok(hash(&[b"GIVEAWAY_TASK_V2", &input.borsh_bytes()?]))
 }
 pub fn fold(domain: &[u8], previous: &[u8; 32], leaf: &[u8; 32]) -> [u8; 32] {
     hash(&[domain, previous, leaf])
@@ -124,7 +125,7 @@ pub fn creation_hash(
         &r.root,
         &r.task_count.to_le_bytes(),
         &id.to_le_bytes(),
-        &terms.try_to_vec()?,
+        &terms.borsh_bytes()?,
     ]))
 }
 pub fn accounting(funding: u64, bps: u16, winners: u32) -> Result<(u64, u64, u64)> {

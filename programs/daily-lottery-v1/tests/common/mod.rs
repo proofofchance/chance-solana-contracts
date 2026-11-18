@@ -141,7 +141,7 @@ fn program_binary_path(program_name: &str) -> PathBuf {
     }
 
     panic!(
-        "missing SBF artifact `{file_name}`; run `cargo test-sbf -p daily_lottery` so LiteSVM can load the compiled program"
+        "missing SBF artifact `{file_name}`; build the independent production manifests first and set SBF_OUT_DIR to their deploy directory"
     );
 }
 

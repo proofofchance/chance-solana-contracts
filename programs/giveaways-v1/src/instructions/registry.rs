@@ -1,3 +1,4 @@
+use crate::BorshBytes;
 use crate::{
     error::GiveawayError,
     state::{Config, Giveaway},
@@ -100,7 +101,7 @@ pub fn record<'a>(
     let (expected, bump) =
         Pubkey::find_program_address(&[b"chance-release", cfg.key.as_ref()], program_id);
     require!(*signer.key == expected, GiveawayError::InvalidInstruction);
-    let rules_hash: [u8; 32] = Sha256::digest(giveaway.try_to_vec()?).into();
+    let rules_hash: [u8; 32] = Sha256::digest(giveaway.borsh_bytes()?).into();
     let data = wire::to_vec(&wire::Instruction::RecordInstance {
         day_or_nonce: nonce,
         rules_hash,

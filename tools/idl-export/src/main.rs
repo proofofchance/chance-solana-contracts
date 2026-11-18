@@ -5,7 +5,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if !root.join("programs/giveaways-v1/Cargo.toml").is_file() {
         return Err("run the IDL exporter from the contract repository root".into());
     }
-    // anchor-lang-idl 0.1.3 formats an inherited toolchain override literally.
+    // anchor-lang-idl 0.2.0 formats an inherited toolchain override literally.
     // The repository rust-toolchain.toml remains authoritative for child cargo.
     std::env::remove_var("RUSTUP_TOOLCHAIN");
     let args: Vec<_> = std::env::args().skip(1).collect();

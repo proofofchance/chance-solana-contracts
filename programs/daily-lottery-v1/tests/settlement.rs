@@ -233,12 +233,18 @@ fn upload_reveals(
         accounts.push(AccountMeta::new(participant, false));
     }
 
+    let entry_count = entries.len();
     let upload_ix = SdkIx {
         program_id,
         accounts,
         data: borsh::to_vec(&Instruction::UploadReveals { entries }).unwrap(),
     };
-    send_tx(ctx, vec![upload_ix], &[authority]).unwrap();
+    // Actual operator management transactions use this same explicit protocol cap.
+    let metadata = send_tx(ctx, vec![max_compute_budget(), upload_ix], &[authority]).unwrap();
+    eprintln!(
+        "SBF upload transaction: {} CU for {entry_count} reveals",
+        metadata.compute_units_consumed
+    );
 }
 
 fn claim_refund(

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "platform": "linux/amd64",
+  "baseImage": "solanafoundation/solana-verifiable-build@sha256:12fd4c0a0790f0fc41ef74b0cdb6bccc167ba6137eb1adb749bac649481c86bd",
+  "rustImage": "rust@sha256:e9d95b74296f7126a83ae3d041aeaba1ff4c478f13abc5cc034fcf7c131c3d4a",
+  "hostRust": "1.100.0",
+  "cargoBuildSbf": {
+    "version": "4.6.0",
+    "file": "cargo-build-sbf-4.6.0.crate",
+    "url": "https://static.crates.io/crates/cargo-build-sbf/cargo-build-sbf-4.6.0.crate",
+    "sha256": "7699013848ea2373e7fc49846096d37c12b1efbfaffffb3724a2642d713fe08c"
+  },
+  "platformTools": {
+    "version": "1.58",
+    "file": "platform-tools-linux-x86_64-v1.58.tar.bz2",
+    "url": "https://github.com/anza-xyz/platform-tools/releases/download/v1.58/platform-tools-linux-x86_64.tar.bz2",
+    "sha256": "7b82eb420b5aebd1e5590db0ae25c523eca06724d4238ae02139690535636c37"
+  },
+  "toolLockSha256": "ce3ace561e83806334a119d723a485a9ac2a7fa801979612b875ec19aa1ef505",
+  "qualification": "pending actual local image and independent ELF reproduction"
+}

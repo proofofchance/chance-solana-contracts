@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "scope": "isolated-litesvm-test-runtime",
+  "lockfile": "tests/runtime/Cargo.lock",
+  "lock_sha256": "ac4cf1cb6af2d426a2a8cc486776e7a6c1c9c6b66ca3c2fd3c64b42b4a8e0e8c",
+  "approval": {
+    "status": "approved",
+    "date": "2026-11-18",
+    "authority": "workspace user",
+    "review_sha256": "9f2ef89ac775224d4366303bd720c12afc7e36b4674bf7ef56cfb155db55c323",
+    "reviewed_lock_delta": [
+      [
+        "bytes",
+        "1.12.1",
+        "1.12.2"
+      ]
+    ],
+    "previous_approval": {
+      "status": "approved",
+      "date": "2026-11-17",
+      "authority": "workspace user",
+      "review_sha256": "19991279168bcb6de624b2bd94b238cb9ff9021b5a17deea93297d750fb559da",
+      "lock_sha256": "ddbfa1d3a43f65c76525607342049d2d4c998db6ba3cb5d2924a2f53e0c7a049"
+    }
+  },
+  "context_directories": [
+    "tests/runtime",
+    "programs/daily-lottery-v1/src",
+    "programs/daily-lottery-v1/tests",
+    "programs/registry/tests",
+    "crates/registry-wire/src"
+  ],
+  "context_files": [
+    ".cargo/config.toml",
+    "rust-toolchain.toml",
+    "programs/daily-lottery-v1/Cargo.toml",
+    "programs/daily-lottery-v1/build.rs",
+    "crates/registry-wire/Cargo.toml",
+    "crates/staging-build-input.rs",
+    "crates/non-production-controls-build.rs",
+    "tools/runtime_advisory_gate.py",
+    "tools/test_runtime_advisory_gate.py",
+    "tools/fixtures/runtime-audit-0.23.json"
+  ],
+  "context_sha256": {
+    ".cargo/config.toml": "4e4d7e44932f9794b18833f629632d28e84ee4e5c9eba5e76ea5e45f124d0863",
+    "crates/non-production-controls-build.rs": "e2b842d4080b5ececa95197538981467e4c59d6a12ed92baa5d734b14d98b156",
+    "crates/registry-wire/Cargo.toml": "94681d46a6b95853ecee0f515167a16be596c0a5f62bd6a7950ac16c16b9a7bc",
+    "crates/registry-wire/src/lib.rs": "2f545aa396979c1d585abac35d0ba1fa0a8caa75c64ac809a157eddbc7b38f58",
+    "crates/staging-build-input.rs": "b740783828fb306c6315df526aeee176d442c620b77215ead8052a9056e4e2af",
+    "programs/daily-lottery-v1/Cargo.toml": "0d2bab309fa8a2110ea28d999044c8a9f4a1f8e35e55f515a750e98217124717",
+    "programs/daily-lottery-v1/build.rs": "4cb8dad31f1ac298721f3f22ab8d5e85e3b575cc1ee9fe0b908744371508decb",
+    "programs/daily-lottery-v1/src/build_capabilities.rs": "1c4a2bd09fabe435d09f4c87249c35f5d341fb6353a746340de37c5ec4e66bf5",
+    "programs/daily-lottery-v1/src/error.rs": "c799c26df2f04c0d6f3d6c6c22a4aa4068cc2d667f9f12a29aae92a6fab2ee1e",
+    "programs/daily-lottery-v1/src/events.rs": "fd1dc7bfbf05f7bc9eafaabd3a95ca7e08d99bf5b3411ac8e57ad94c347e7689",
+    "programs/daily-lottery-v1/src/instructions/attest_reveal.rs": "43a5e8513d5a6c0a74419fbf40caeb80de0b83aa75e13de5e39be06c7cd6df92",
+    "programs/daily-lottery-v1/src/instructions/attest_uploaded.rs": "31cfedfc3e7576f61a2cbde787f255770f4fb1c78483bed44db6f4a833487b01",
+    "programs/daily-lottery-v1/src/instructions/begin_reveal_phase.rs": "ad0e07aa4dd05a11e7e6bae1f1a316fc31d08d42e4a4cd029e4844bb4124a302",
+    "programs/daily-lottery-v1/src/instructions/buy_tickets.rs": "158ffdc1999cda0581eb8ccd62f3c51099aa24e64c5b8746bdd771b2332632f5",
+    "programs/daily-lottery-v1/src/instructions/claim_refund.rs": "b999e05166fdc4ddda4aba946b9796b23cf9f1d1aa79baa9090102a4cbc31c6c",
+    "programs/daily-lottery-v1/src/instructions/close_participant.rs": "2cf2486a9398d08b2c3f29cb031780b121c997830f0c181be524f917f5e54c62",
+    "programs/daily-lottery-v1/src/instructions/close_refund_vault.rs": "ff974a2b77685fa085f36ad5c489f02d089b0d925e8e217c610ee502402094e0",
+    "programs/daily-lottery-v1/src/instructions/create_lottery.rs": "db6a10c5a8120ead80d4ab3938b0ef3f77f44cf2ec5bdb064bb878881fe59cdb",
+    "programs/daily-lottery-v1/src/instructions/finalize_no_attesters.rs": "354cc478d2ea2292460f5e9427d550fb5b3ba0d507348c291349f31c28fd14bc",
+    "programs/daily-lottery-v1/src/instructions/finalize_winners.rs": "0c457e2101e7245c3703a83a54619809c6eb8ba9f814440a71fcc56aad832624",
+    "programs/daily-lottery-v1/src/instructions/initialize.rs": "0dad8e40d81a480fc13bb7acc9ea43b9a99b75f516556d3203d2ba43066fd114",
+    "programs/daily-lottery-v1/src/instructions/mod.rs": "6b598b6c782775914f3e9282aa6d377b1d142c74904c52c00f55a0f82609072d",
+    "programs/daily-lottery-v1/src/instructions/registry.rs": "67d9859f7d25eaff9d017e7c0e459e14777638a1addb8ead1669c3f29f28bde2",
+    "programs/daily-lottery-v1/src/instructions/settle_payout_batch.rs": "968d78c617c4eba5c80b3dcefcef538787d666a811cf42fca7d84a653490746a",
+    "programs/daily-lottery-v1/src/instructions/update_service_charge.rs": "4d0488c7c32ec17cfe3ec040fdfd7639432e0baf4c27d807f738e39f308b6ede",
+    "programs/daily-lottery-v1/src/instructions/upload_reveals.rs": "921c5163214326262d2ce77257e17f5c04c2de9fe54b930696027da98f4c284d",
+    "programs/daily-lottery-v1/src/lib.rs": "e3ee3f4c70c203aa84ff8c3ea1eb0d4e070fa8fbe86176e7bed5b77b70109e7e",
+    "programs/daily-lottery-v1/src/state/config.rs": "7c858f9cd8e87c9a47c75a8df8125f3de3abba8dd89da3c84d7492553a9c7e8d",
+    "programs/daily-lottery-v1/src/state/finalization_ledger.rs": "09654fba78b16a74b303c64280bbd808046383891005db14256505e9972ea5c1",
+    "programs/daily-lottery-v1/src/state/lottery.rs": "873c0033760bdbd61ddec7e5d111f3649195155f5e6043de11b6b86562cad27d",
+    "programs/daily-lottery-v1/src/state/mod.rs": "2c392eaf4f24143134fbeaa42cef64140e2e0d0f046fd4eedddfcceaec89238f",
+    "programs/daily-lottery-v1/src/state/participant.rs": "2f054624c62a1da758298fcd00dc97517b430de4e4cb39c927fd43cff390bd1e",
+    "programs/daily-lottery-v1/src/state/vault.rs": "75fd7d28d4a041b4806ab6be46429a1d7c2a191c688f3128a5c9f515f78257d7",
+    "programs/daily-lottery-v1/src/state/vote_tally.rs": "48fe462c4a4441166912a44fab46ffa68b538e8fc3e4f8bdea77dd3b393bd4f2",
+    "programs/daily-lottery-v1/src/state/winners_ledger.rs": "1994a3db345dc8ff3a406cd04008dc3e5671f3303f98513f12338a84793481b8",
+    "programs/daily-lottery-v1/src/test_control_policy.rs": "be7c1dddb98a9ddb35ba95a3845a311566dd5a073b806868af71369f55811e39",
+    "programs/daily-lottery-v1/src/tests.rs": "548a858082418274efb731de3797af8bc6d106165e2e524f7b744de60e4b3a9a",
+    "programs/daily-lottery-v1/src/utils/account.rs": "2da2c55e234b66a35e31a0f72f72642bc38f9da7448ab33d1911db643c41fd83",
+    "programs/daily-lottery-v1/src/utils/crypto.rs": "ebd579f406353e52959f364b1064af3596c41836b0a5d0ae97190dfb7ef0ca8c",
+    "programs/daily-lottery-v1/src/utils/limits.rs": "77b45c2152580a0d7fdf9509c907343f5ea164cd5a2dc2c9edfa7036ece062a9",
+    "programs/daily-lottery-v1/src/utils/mod.rs": "331e7c998cbdb0006bc6c0f0cfa58a8af0c55104f2eb653a60330756009b4cce",
+    "programs/daily-lottery-v1/src/utils/pda.rs": "06102ae034f6891b4176e9e8d6fd10388092ca31c5c6547aa0818159757cd880",
+    "programs/daily-lottery-v1/src/utils/validation.rs": "cd0293ec020170361dd5fc9330be06d98e00d9c5ddc03431280f9955a6d9abfb",
+    "programs/daily-lottery-v1/tests/admin_and_errors.rs": "571756f9a2a4a182d5ed31de9e4d16e4b96c7e6450ab5408a73dd2ad2ef7ba65",
+    "programs/daily-lottery-v1/tests/common/mod.rs": "727a607dfc7e4472f2b8901874eb442258049aa63ffd81743d947b02495b2e5b",
+    "programs/daily-lottery-v1/tests/flow.rs": "0ce1a8a741be835ee806911d764bc21424e9113b709a7a0adc332562a173e3fe",
+    "programs/daily-lottery-v1/tests/full_flow.rs": "7e80960abd729b490bcc153e2229bcb892f0165c41994854347678fe2e6dbe6b",
+    "programs/daily-lottery-v1/tests/initialize.rs": "f8ac10bc335b5150f498ce1a8fab1ce41056a29dc2d254b69c70dcbaf8737dc8",
+    "programs/daily-lottery-v1/tests/settlement.rs": "31aad1f1c649947759d074ab360b90e87614302bc0e5de782c1f4620fef41b7b",
+    "programs/daily-lottery-v1/tests/test_controls.rs": "64ed85c4ed65afe8df8a5874690f718e787304a7b0331794b7d8f87aad515044",
+    "programs/registry/tests/giveaway_brand_review.rs": "f3d97b4edc264fe84d339319977f13d0afab8f98e1bc77234ed1caca130f99ab",
+    "programs/registry/tests/giveaway_devnet.rs": "f73823f879de64f1ce95020b3fcf29f852b3383cdb197583163bbf9ec000f42a",
+    "programs/registry/tests/lifecycle.rs": "50d004ee1144a25897fecc79bfdd82ddb217195aab298269091ec4e2264aeed0",
+    "programs/registry/tests/staging_afresh.rs": "98ea441ca854a929a8ea58f12a8d54da384fa27df1041f0bb405b19bc0f6adfe",
+    "rust-toolchain.toml": "2005a6440b4cf56de43085410f26315d73dece6d34a6d32920669f65f33062c4",
+    "tests/runtime/Cargo.toml": "9bab1ffb4e337f84d52cb166b6dd6312a4e2a016489ee3aa2b4cda1ae5ee956a",
+    "tests/runtime/daily-model/Cargo.toml": "2030035c374f52f6ab490c4cbf9b322388d26c5cf28a5f1a484d20884202f3f2",
+    "tests/runtime/daily-model/build.rs": "4e180ecb3daf134f8cc88544c431cea39ad33ad60212d3cf00a59406ab7fb959",
+    "tests/runtime/lib.rs": "8ed6c83b8f0357cf6bb4b8b472d409d43fcb0c2367f8aae20a0d2e717bfc2a01",
+    "tools/fixtures/runtime-audit-0.23.json": "a6d5dff37675deb6381e8696f4c319bdc333f607b282feee5ac44ffe9229ddeb",
+    "tools/runtime_advisory_gate.py": "fde9a1987c7366116aad3e9665aaaa9fc5a2fa9ca6555e4e894e01e6f135555f",
+    "tools/test_runtime_advisory_gate.py": "f07b30e293cdc345474d3bf3956bf549c1a947682fed648c83d520c9ac648ac6"
+  },
+  "findings": [
+    {
+      "kind": "unmaintained",
+      "advisory": "RUSTSEC-2021-0139",
+      "package": "ansi_term",
+      "version": "0.12.1",
+      "categories": [],
+      "informational": "unmaintained",
+      "advisory_sha256": "156c7b9d817b7680b066949b939a774f1df2fa29a87a18c909d51b60a5278587"
+    },
+    {
+      "kind": "unmaintained",
+      "advisory": "RUSTSEC-2024-0388",
+      "package": "derivative",
+      "version": "2.2.0",
+      "categories": [],
+      "informational": "unmaintained",
+      "advisory_sha256": "54d58b3bd4d221d755fb395353e35ead605fd55aac43e517c6bfbacda2123958"
+    },
+    {
+      "kind": "unmaintained",
+      "advisory": "RUSTSEC-2024-0436",
+      "package": "paste",
+      "version": "1.0.15",
+      "categories": [],
+      "informational": "unmaintained",
+      "advisory_sha256": "b0ecb2e148b7788aa275afa1af7fc4b6ebbc5025e2a662d5ab3d8cf229d3ce57"
+    },
+    {
+      "kind": "unmaintained",
+      "advisory": "RUSTSEC-2025-0141",
+      "package": "bincode",
+      "version": "1.3.3",
+      "categories": [],
+      "informational": "unmaintained",
+      "advisory_sha256": "a464a9c2cf744b778323119a53812ab7c2a03485d64e916566b1f1232eade1f6"
+    },
+    {
+      "kind": "unmaintained",
+      "advisory": "RUSTSEC-2025-0161",
+      "package": "libsecp256k1",
+      "version": "0.7.2",
+      "categories": [],
+      "informational": "unmaintained",
+      "advisory_sha256": "2fb311a48641e29e8d402bb92369c07ae1e44f45647f2993bf0f38cd251ad687"
+    },
+    {
+      "kind": "unsound",
+      "advisory": "RUSTSEC-2026-0097",
+      "package": "rand",
+      "version": "0.7.3",
+      "categories": [],
+      "informational": "unsound",
+      "advisory_sha256": "eab7599e4bc9616b7dd2e3db02b7d45c148f6ba058405a01d28d2c959d9a9580"
+    },
+    {
+      "kind": "vulnerability",
+      "advisory": "RUSTSEC-2022-0093",
+      "package": "ed25519-dalek",
+      "version": "1.0.1",
+      "categories": [
+        "crypto-failure"
+      ],
+      "informational": null,
+      "advisory_sha256": "ab385ef0ba211cb825b089de909320eae792bf9576af1fbfdca31fae011cf9ea"
+    },
+    {
+      "kind": "vulnerability",
+      "advisory": "RUSTSEC-2024-0344",
+      "package": "curve25519-dalek",
+      "version": "3.2.0",
+      "categories": [
+        "crypto-failure"
+      ],
+      "informational": null,
+      "advisory_sha256": "f5832244f5a0eeb015170437ade020d6b21528fa8f67fe3025e98650d1f715e7"
+    },
+    {
+      "kind": "vulnerability",
+      "advisory": "RUSTSEC-2026-0387",
+      "package": "crypto-bigint",
+      "version": "0.5.5",
+      "categories": [
+        "crypto-failure"
+      ],
+      "informational": null,
+      "advisory_sha256": "d6428ce23dcc57d1c3ef56daf3b1ef285fde0d3ba240c87b95f5e6f5460654de"
+    }
+  ],
+  "exposure_review": "Latest stable simulator/precompile release still pins these libraries. Reviewed call paths verify public inputs and do not use the old signing/secret arithmetic helpers. No production signing keys enter this harness.",
+  "upstream_references": [
+    "https://github.com/anza-xyz/agave/blob/v4.4.1/precompiles/Cargo.toml",
+    "https://github.com/LiteSVM/litesvm/releases/tag/v0.18.2"
+  ],
+  "remediation": "Replace the stable simulator/precompile dependency when a compatible patched release exists. Every lock, source context or finding change requires a new review. No production, operations or IDL lock is covered."
+}

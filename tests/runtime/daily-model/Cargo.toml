@@ -1,0 +1,33 @@
+[package]
+name = "chance-daily-runtime-model"
+version = "0.1.0"
+edition = "2021"
+publish = false
+autotests = false
+build = "build.rs"
+
+[lib]
+name = "chance_daily_runtime_model"
+path = "../../../programs/daily-lottery-v1/src/lib.rs"
+crate-type = ["lib"]
+
+[features]
+staging-afresh-v1 = []
+allow-early-upload = []
+local-test-controls = []
+staging-test-controls = []
+production-release = []
+allow-service-charge-update = []
+no-entrypoint = []
+default = []
+
+[dependencies]
+solana-program = "=4.0.0"
+solana-system-interface = { version = "=3.3.0", features = ["bincode"] }
+solana-sha256-hasher = "=3.1.0"
+borsh = { version = "=1.8.1", features = ["derive"] }
+thiserror = "=2.0.21"
+sha2 = "=0.11.1"
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+chance-registry-wire = { path = "../../../crates/registry-wire" }
