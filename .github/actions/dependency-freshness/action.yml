@@ -1,0 +1,27 @@
+name: Dependency freshness
+description: Report stale pinned dependencies in the caller's checked-out commit
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: '3.15.2'
+    - name: Compare committed pins with upstream release evidence
+      shell: bash
+      env:
+        SCANNER_DIRECTORY: ${{ github.action_path }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        python3 -I -B "$SCANNER_DIRECTORY/scan.py" \
+          --repository "$GITHUB_WORKSPACE" \
+          --revision "$GITHUB_SHA" \
+          --label "$GITHUB_REPOSITORY" \
+          --output "$RUNNER_TEMP/dependency-freshness/report.json"
+    - name: Retain dependency freshness report
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: dependency-freshness-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/dependency-freshness/report.json
+        if-no-files-found: error
+        retention-days: 30
