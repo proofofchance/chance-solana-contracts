@@ -2,12 +2,26 @@
   "schema": 1,
   "scope": "isolated-litesvm-test-runtime",
   "lockfile": "tests/runtime/Cargo.lock",
-  "lock_sha256": "ddbfa1d3a43f65c76525607342049d2d4c998db6ba3cb5d2924a2f53e0c7a049",
+  "lock_sha256": "ac4cf1cb6af2d426a2a8cc486776e7a6c1c9c6b66ca3c2fd3c64b42b4a8e0e8c",
   "approval": {
     "status": "approved",
-    "date": "2026-11-17",
+    "date": "2026-11-18",
     "authority": "workspace user",
-    "review_sha256": "19991279168bcb6de624b2bd94b238cb9ff9021b5a17deea93297d750fb559da"
+    "review_sha256": "9f2ef89ac775224d4366303bd720c12afc7e36b4674bf7ef56cfb155db55c323",
+    "reviewed_lock_delta": [
+      [
+        "bytes",
+        "1.12.1",
+        "1.12.2"
+      ]
+    ],
+    "previous_approval": {
+      "status": "approved",
+      "date": "2026-11-17",
+      "authority": "workspace user",
+      "review_sha256": "19991279168bcb6de624b2bd94b238cb9ff9021b5a17deea93297d750fb559da",
+      "lock_sha256": "ddbfa1d3a43f65c76525607342049d2d4c998db6ba3cb5d2924a2f53e0c7a049"
+    }
   },
   "context_directories": [
     "tests/runtime",
