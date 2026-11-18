@@ -1,0 +1,26 @@
+name: Dependency freshness
+
+on:
+  schedule:
+    - cron: '17 8 * * 1'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-freshness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-freshness:
+    name: Review pinned dependency releases
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: proofofchance/chance-solana-contracts/.github/actions/dependency-freshness@b7add361089053c6338a946c91ef5561fb80d49f
